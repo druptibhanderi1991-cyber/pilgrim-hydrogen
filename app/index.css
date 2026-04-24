@@ -1,0 +1,77 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+  --primary-charcoal: #1a1a1a;
+  --accent-gold: rgb(255, 193, 5);
+  --accent-gold-hover: rgb(220, 165, 0);
+  --bg-mint: #e0f2f1;
+  --bg-white: #ffffff;
+  --bg-light-gray: #f5f5f5;
+  --text-gray: #666666;
+  --border-color: #e5e5e5;
+  --sale-red: #d32f2f;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  color: var(--primary-charcoal);
+  background-color: var(--bg-white);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+ul {
+  list-style: none;
+}
+
+button {
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  border: none;
+  background: none;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* Common utility classes */
+.btn-primary {
+  background-color: var(--accent-gold);
+  color: var(--primary-charcoal);
+  font-weight: 600;
+  padding: 12px 24px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease;
+  width: 100%;
+}
+
+.btn-primary:hover {
+  background-color: var(--accent-gold-hover);
+}
+
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+main {
+  flex-grow: 1;
+}
