@@ -30,6 +30,7 @@ export function MockOptionsMain() {
     // Create a specialized cart item incorporating the variant details
     const productToAdd = {
       ...optionsProduct,
+      variantId: selectedVariant.id, // Explicitly pass variantId for Shopify API
       id: selectedVariant.id || `${optionsProduct.id}-${selectedVariant.size}`,
       baseProductId: optionsProduct.id,
       size: selectedVariant.size,

@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import ProductCard from '../components/ProductCard';
+import * as shopifyApi from '~/lib/shopify';
 import '../styles/Home.css';
 
 const categories = [
@@ -11,72 +12,20 @@ const categories = [
   { id: 6, name: 'Pain Relief Oils', image: '/pain_relief_oil.png' },
 ];
 
-const trendingProducts = [
-  {
-    id: 1,
-    name: '10% Vitamin C Face Serum',
-    subtitle: 'Glowing, Brighter Skin in 5 Days*',
-    price: 645,
-    originalPrice: null,
-    rating: 4.8,
-    reviews: 5476,
-    size: '30ml',
-    badge: 'Bestseller',
-    circleBadge: 'Clinically Tested',
-    rankText: '#1 IN SKINCARE',
-    image: '/gold_serum.png',
-    variants: [
-      { size: '30ml', price: 645, id: '1-30' },
-      { size: '50ml', price: 995, id: '1-50' },
-      { size: '100ml', price: 1895, id: '1-100', badge: 'BEST VALUE' }
-    ]
-  },
-  {
-    id: 2,
-    name: '10% Niacinamide Face Serum',
-    subtitle: 'Fades Acne Marks & Spots',
-    price: 649,
-    originalPrice: null,
-    rating: 4.9,
-    reviews: 5097,
-    size: '30ml',
-    badge: 'Trending',
-    circleBadge: 'NEW & IMPROVED',
-    rankText: '#2 IN SKINCARE',
-    image: '/gold_serum.png'
-  },
-  {
-    id: 3,
-    name: 'Korean Hydra Glow Moisturizer',
-    subtitle: 'Instant Glass Skin Glow',
-    price: 395,
-    originalPrice: null,
-    rating: 4.7,
-    reviews: 448,
-    size: '100g',
-    badge: 'Sale',
-    circleBadge: 'Korean Glass Skin Glow',
-    rankText: '#1 IN MOISTURIZERS',
-    image: '/face_wash.png'
-  },
-  {
-    id: 4,
-    name: '25% AHA 2% BHA 5% PHA Peeling Solution',
-    subtitle: '10-Mins Tan Removal',
-    price: 645,
-    originalPrice: null,
-    rating: 4.6,
-    reviews: 7778,
-    size: '30ml',
-    badge: 'New & Improved',
-    circleBadge: 'Tan Removal',
-    rankText: '#3 IN SKINCARE',
-    image: '/gold_serum.png'
-  }
-];
-
 const Home = () => {
   const [activePill, setActivePill] = useState('Top Picks for You');
+  const [trendingProducts, setTrendingProducts] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadProducts() {
+      setIsLoading(true);
+      const products = await shopifyApi.fetchProducts();
+      setTrendingProducts(products || []);
+      setIsLoading(false);
+    }
+    loadProducts();
+  }, []);
 
   return (
     <div className="home-container">
@@ -128,10 +77,20 @@ const Home = () => {
           </div>
 
           <div className="products-grid">
-            {trendingProducts.map((product) => (
+          {isLoading ? (
+            <div style={{textAlign: 'center', padding: '40px', gridColumn: '1 / -1'}}>
+              <p>Loading live products from Shopify...</p>
+            </div>
+          ) : trendingProducts.length > 0 ? (
+            trendingProducts.map((product) => (
               <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
+            ))
+          ) : (
+            <div style={{textAlign: 'center', padding: '40px', gridColumn: '1 / -1'}}>
+              <p>No products found.</p>
+            </div>
+          )}
+        </div>
         </div>
       </section>
 

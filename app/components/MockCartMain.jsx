@@ -5,13 +5,17 @@ import { useAside } from './Aside';
 import './MockCartMain.css';
 
 export function MockCartMain() {
-  const { cartItems, updateQuantity, removeFromCart, cartTotal, cartQuantity } = useCart();
+  const { cartItems, cartData, updateQuantity, removeFromCart, cartTotal, isSyncing } = useCart();
   const navigate = useNavigate();
   const { close } = useAside();
 
   const handleCheckout = () => {
-    close();
-    navigate('/checkout');
+    if (cartData?.checkoutUrl) {
+      window.location.href = cartData.checkoutUrl;
+    } else {
+      close();
+      navigate('/checkout'); // Fallback
+    }
   };
 
   if (cartItems.length === 0) {
@@ -63,8 +67,12 @@ export function MockCartMain() {
             <span className="free-text">FREE</span>
           </div>
         </div>
-        <button className="checkout-btn" onClick={handleCheckout}>
-          Checkout • ₹{cartTotal}
+        <button 
+          className="checkout-btn" 
+          onClick={handleCheckout}
+          disabled={isSyncing}
+        >
+          {isSyncing ? 'Syncing...' : `Checkout • ₹${cartTotal}`}
         </button>
       </div>
     </div>

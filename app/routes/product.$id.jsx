@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { useLoaderData } from 'react-router';
 import { Star, ShoppingCart, Sparkles, Droplets, ShieldCheck, Smile, Wind, Feather, Lock, Truck } from 'lucide-react';
 import { useCart } from '~/context/CartContext';
 import { useAside } from '~/components/Aside';
@@ -53,6 +54,79 @@ const reviewsMockData = [
   }
 ];
 
+export async function loader({ params, context }) {
+  const { id } = params;
+  const { storefront } = context;
+
+  const PRODUCT_QUERY = `
+    query getProductById($id: ID!) {
+      product(id: $id) {
+        id
+        title
+        description
+        descriptionHtml
+        priceRange {
+          minVariantPrice {
+            amount
+            currencyCode
+          }
+        }
+        featuredImage {
+          url
+        }
+        images(first: 5) {
+          nodes {
+            url
+          }
+        }
+        variants(first: 10) {
+          nodes {
+            id
+            title
+            price {
+              amount
+            }
+            availableForSale
+          }
+        }
+      }
+    }
+  `;
+
+  try {
+    const { product } = await storefront.query(PRODUCT_QUERY, {
+      variables: { id }
+    });
+
+    if (!product) {
+      throw new Response("Product Not Found", { status: 404 });
+    }
+
+    const formattedProduct = {
+      id: product.id,
+      name: product.title,
+      price: parseFloat(product.priceRange.minVariantPrice.amount),
+      size: product.variants.nodes[0]?.title || 'Standard',
+      image: product.featuredImage?.url,
+      images: product.images.nodes.map(img => img.url),
+      description: product.description,
+      descriptionHtml: product.descriptionHtml,
+      benefits: [],
+      variants: product.variants.nodes.map(v => ({
+        id: v.id,
+        size: v.title,
+        price: parseFloat(v.price.amount),
+        available: v.availableForSale
+      }))
+    };
+
+    return { product: formattedProduct };
+  } catch (err) {
+    console.error(err);
+    throw new Response("Error loading product", { status: 500 });
+  }
+}
+
 const ProductDetail = () => {
   const { id } = useParams();
   const [activeTab, setActiveTab] = useState('description');
@@ -65,8 +139,9 @@ const ProductDetail = () => {
   const { cartItems, addToCart, updateQuantity } = useCart();
   const { open } = useAside();
   
-  const product = productData; // Using mock data
-  const cartItem = cartItems.find(item => item.id === product.id);
+  const { product } = useLoaderData();
+  const reviewsMockData = []; // Removed mock reviews
+  const cartItem = cartItems.find(item => item.baseProductId === product.id || item.id === product.id);
   const currentQuantity = cartItem ? cartItem.quantity : 0;
 
   const [pincode, setPincode] = useState('');
@@ -167,14 +242,16 @@ const ProductDetail = () => {
           
           <div className="pdp-rank-tag">{product.rankText}</div>
           
-          <div className="pdp-rating" style={{marginBottom: '5px'}}>
-            <div className="stars">
-              {[1, 2, 3, 4, 5].map((s) => (
-                <Star key={s} size={16} fill="#F5B041" color="#F5B041" />
-              ))}
+          {product.rating && (
+            <div className="pdp-rating" style={{marginBottom: '5px'}}>
+              <div className="stars">
+                {[1, 2, 3, 4, 5].map((s) => (
+                  <Star key={s} size={16} fill="#F5B041" color="#F5B041" />
+                ))}
+              </div>
+              <span className="rating-text">{product.rating}/5 <span style={{textDecoration: 'underline', color: '#666'}}>({product.reviews} Reviews)</span></span>
             </div>
-            <span className="rating-text">4.8/5 <span style={{textDecoration: 'underline', color: '#666'}}>({product.reviews} Reviews)</span></span>
-          </div>
+          )}
 
           <h1 className="pdp-title">{product.name}</h1>
           <p className="pdp-subtitle">{product.subtitle}</p>
@@ -585,15 +662,15 @@ const ProductDetail = () => {
               <button 
                 className="btn-primary" 
                 style={{ backgroundColor: '#2E7D32', color: 'white', padding: '10px 30px', border: 'none', borderRadius: '4px', fontWeight: 'bold', cursor: 'pointer' }}
-                onClick={() => addToCart(product, 1)}
+                onClick={() => { addToCart(product, 1); open('cart'); }}
               >
                 Add to Cart
               </button>
             ) : (
               <div className="sticky-yellow-action" style={{ display: 'flex', alignItems: 'center', backgroundColor: '#F5B041', borderRadius: '4px', padding: '5px 15px', fontWeight: 'bold' }}>
-                <button onClick={() => updateQuantity(product.id, currentQuantity - 1)} style={{ background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer' }}>-</button>
+                <button onClick={() => updateQuantity(cartItem.id, currentQuantity - 1)} style={{ background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer' }}>-</button>
                 <span style={{ margin: '0 15px' }}>{currentQuantity}</span>
-                <button onClick={() => updateQuantity(product.id, currentQuantity + 1)} style={{ background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer' }}>+</button>
+                <button onClick={() => updateQuantity(cartItem.id, currentQuantity + 1)} style={{ background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer' }}>+</button>
               </div>
             )}
           </div>
