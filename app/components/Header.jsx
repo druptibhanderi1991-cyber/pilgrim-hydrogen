@@ -3,7 +3,7 @@ import { Search, User, ShoppingBag } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import './Header.css';
 
-const Header = () => {
+export function Header() {
   return (
     <header className="header-container">
       <div className="announcement-bar">
@@ -41,6 +41,8 @@ const Header = () => {
       </div>
     </header>
   );
-};
+}
 
-export default Header;
+export function HeaderMenu() {
+  return null;
+}

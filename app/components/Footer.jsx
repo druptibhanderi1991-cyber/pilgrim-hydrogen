@@ -2,7 +2,7 @@ import React from 'react';
 import { MessageCircle, Globe, Mail, Phone } from 'lucide-react';
 import './Footer.css';
 
-const Footer = () => {
+export function Footer() {
   return (
     <footer className="footer-container">
       <div className="container footer-inner">
@@ -40,6 +40,4 @@ const Footer = () => {
       </div>
     </footer>
   );
-};
-
-export default Footer;
+}
