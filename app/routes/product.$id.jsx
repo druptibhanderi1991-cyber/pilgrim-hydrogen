@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Star, ShoppingCart, Sparkles, Droplets, ShieldCheck, Smile, Wind, Feather, Lock, Truck } from 'lucide-react';
+import { useCart } from '~/context/CartContext';
+import { useAside } from '~/components/Aside';
 import '../styles/ProductDetail.css';
 
 const productData = {
@@ -53,7 +55,6 @@ const reviewsMockData = [
 
 const ProductDetail = () => {
   const { id } = useParams();
-  const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState('description');
   const [activeAccordion, setActiveAccordion] = useState(1);
   const [sliderPos, setSliderPos] = useState(50);
@@ -61,6 +62,13 @@ const ProductDetail = () => {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   
+  const { cartItems, addToCart, updateQuantity } = useCart();
+  const { open } = useAside();
+  
+  const product = productData; // Using mock data
+  const cartItem = cartItems.find(item => item.id === product.id);
+  const currentQuantity = cartItem ? cartItem.quantity : 0;
+
   const [pincode, setPincode] = useState('');
   const [deliveryInfo, setDeliveryInfo] = useState(null);
   const [isChecking, setIsChecking] = useState(false);
@@ -114,15 +122,11 @@ const ProductDetail = () => {
     setActiveImageIndex((prev) => (prev - 1 + product.images.length) % product.images.length);
   };
 
-  const increase = () => setQuantity(q => q + 1);
-  const decrease = () => setQuantity(q => q > 1 ? q - 1 : 1);
-
   const toggleAccordion = (index) => {
     setActiveAccordion(activeAccordion === index ? null : index);
   };
 
-  // In a real app, fetch product by id. Here we use mock data.
-  const product = productData;
+  // product is already defined above
 
   return (
     <div className="product-detail-page">
@@ -572,16 +576,26 @@ const ProductDetail = () => {
               </select>
             </div>
             
-            <button className="view-cart-btn">
+            <button className="view-cart-btn" onClick={() => open('cart')}>
               <ShoppingCart size={20} color="#222" />
               <span>View Cart</span>
             </button>
 
-            <div className="sticky-yellow-action">
-              <button onClick={decrease}>-</button>
-              <span>{quantity}</span>
-              <button onClick={increase}>+</button>
-            </div>
+            {!cartItem ? (
+              <button 
+                className="btn-primary" 
+                style={{ backgroundColor: '#2E7D32', color: 'white', padding: '10px 30px', border: 'none', borderRadius: '4px', fontWeight: 'bold', cursor: 'pointer' }}
+                onClick={() => addToCart(product, 1)}
+              >
+                Add to Cart
+              </button>
+            ) : (
+              <div className="sticky-yellow-action" style={{ display: 'flex', alignItems: 'center', backgroundColor: '#F5B041', borderRadius: '4px', padding: '5px 15px', fontWeight: 'bold' }}>
+                <button onClick={() => updateQuantity(product.id, currentQuantity - 1)} style={{ background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer' }}>-</button>
+                <span style={{ margin: '0 15px' }}>{currentQuantity}</span>
+                <button onClick={() => updateQuantity(product.id, currentQuantity + 1)} style={{ background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer' }}>+</button>
+              </div>
+            )}
           </div>
         </div>
       </div>

@@ -24,7 +24,12 @@ const trendingProducts = [
     badge: 'Bestseller',
     circleBadge: 'Clinically Tested',
     rankText: '#1 IN SKINCARE',
-    image: '/gold_serum.png'
+    image: '/gold_serum.png',
+    variants: [
+      { size: '30ml', price: 645, id: '1-30' },
+      { size: '50ml', price: 995, id: '1-50' },
+      { size: '100ml', price: 1895, id: '1-100', badge: 'BEST VALUE' }
+    ]
   },
   {
     id: 2,

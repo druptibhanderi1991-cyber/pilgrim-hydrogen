@@ -1,13 +1,30 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { Star, ShoppingCart } from 'lucide-react';
+import { useCart } from '~/context/CartContext';
+import { useAside } from '~/components/Aside';
 import './ProductCard.css';
 
 const ProductCard = ({ product }) => {
-  const [quantity, setQuantity] = useState(1);
+  const { cartItems, addToCart, updateQuantity, setOptionsProduct } = useCart();
+  const { open } = useAside();
+  
+  // Find cart items matching this product (either directly by id, or via baseProductId from variants)
+  const relatedCartItems = cartItems.filter(item => item.id === product.id || item.baseProductId === product.id);
+  // If there are variants in cart, we sync the stepper with the total quantity or the first variant's quantity.
+  // We'll use the total quantity of all variants for display, but modify the first variant on +/-.
+  const totalQuantity = relatedCartItems.reduce((acc, item) => acc + item.quantity, 0);
+  const primaryCartItem = relatedCartItems[0];
 
-  const increase = () => setQuantity(q => q + 1);
-  const decrease = () => setQuantity(q => q > 1 ? q - 1 : 1);
+  const handleAddToCart = (e) => {
+    e.preventDefault();
+    if (product.variants && product.variants.length > 1) {
+      setOptionsProduct(product);
+      open('options');
+    } else {
+      addToCart(product, 1);
+    }
+  };
 
   return (
     <div className="product-card">
@@ -41,14 +58,26 @@ const ProductCard = ({ product }) => {
         </div>
         
         <div className="product-action-row">
-          <div className="quantity-selector">
-            <button onClick={decrease}>-</button>
-            <span>{quantity}</span>
-            <button onClick={increase}>+</button>
-          </div>
-          <button className="btn-primary add-to-cart-btn">
-            Add to cart <ShoppingCart size={16} style={{marginLeft: '8px'}} />
-          </button>
+          {relatedCartItems.length === 0 ? (
+            <button 
+              className="btn-primary add-to-cart-btn" 
+              style={{ width: '100%' }}
+              onClick={handleAddToCart}
+            >
+              Add to cart <ShoppingCart size={16} style={{marginLeft: '8px'}} />
+            </button>
+          ) : (
+            <div className="quantity-selector-styled">
+              <button onClick={(e) => { e.preventDefault(); updateQuantity(primaryCartItem.id, primaryCartItem.quantity - 1); }}>-</button>
+              <span>{totalQuantity}</span>
+              <button onClick={(e) => { 
+                e.preventDefault(); 
+                // If there's multiple variants, hitting + on the card will increment the first one added.
+                // Alternatively, we could open the options drawer again. Let's just increment the primary one.
+                updateQuantity(primaryCartItem.id, primaryCartItem.quantity + 1); 
+              }}>+</button>
+            </div>
+          )}
         </div>
       </div>
     </div>

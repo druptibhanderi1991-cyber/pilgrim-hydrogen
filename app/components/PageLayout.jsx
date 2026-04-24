@@ -4,6 +4,8 @@ import {Aside} from '~/components/Aside';
 import {Footer} from '~/components/Footer';
 import {Header, HeaderMenu} from '~/components/Header';
 import {CartMain} from '~/components/CartMain';
+import {MockCartMain} from '~/components/MockCartMain';
+import {MockOptionsMain} from '~/components/MockOptionsMain';
 import {
   SEARCH_ENDPOINT,
   SearchFormPredictive,
@@ -24,6 +26,7 @@ export function PageLayout({
   return (
     <Aside.Provider>
       <CartAside cart={cart} />
+      <OptionsAside />
       <SearchAside />
       <MobileMenuAside header={header} publicStoreDomain={publicStoreDomain} />
       {header && (
@@ -49,14 +52,16 @@ export function PageLayout({
  */
 function CartAside({cart}) {
   return (
-    <Aside type="cart" heading="CART">
-      <Suspense fallback={<p>Loading cart ...</p>}>
-        <Await resolve={cart}>
-          {(cart) => {
-            return <CartMain cart={cart} layout="aside" />;
-          }}
-        </Await>
-      </Suspense>
+    <Aside type="cart" heading="MY CART">
+      <MockCartMain />
+    </Aside>
+  );
+}
+
+function OptionsAside() {
+  return (
+    <Aside type="options" heading="Choose options">
+      <MockOptionsMain />
     </Aside>
   );
 }

@@ -1,6 +1,8 @@
 import React from 'react';
 import { Search, User, ShoppingBag } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useCart } from '~/context/CartContext';
+import { useAside } from '~/components/Aside';
 import './Header.css';
 
 export function Header() {
@@ -32,14 +34,23 @@ export function Header() {
             <button className="icon-btn" aria-label="Account">
               <User size={20} />
             </button>
-            <button className="icon-btn cart-btn" aria-label="Cart">
-              <ShoppingBag size={20} />
-              <span className="cart-badge">0</span>
-            </button>
+            <CartBadge />
           </div>
         </div>
       </div>
     </header>
+  );
+}
+
+function CartBadge() {
+  const { cartQuantity } = useCart();
+  const { open } = useAside();
+
+  return (
+    <button className="icon-btn cart-btn" aria-label="Cart" onClick={() => open('cart')}>
+      <ShoppingBag size={20} />
+      <span className="cart-badge">{cartQuantity}</span>
+    </button>
   );
 }
 

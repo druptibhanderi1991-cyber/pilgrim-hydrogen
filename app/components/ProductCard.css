@@ -192,3 +192,42 @@
 .add-to-cart-btn:hover {
   background-color: #2d5823;
 }
+
+.quantity-selector-styled {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: 40px;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  overflow: hidden;
+  background-color: #fff;
+}
+
+.quantity-selector-styled button {
+  background-color: #f1c40f;
+  border: none;
+  width: 45px;
+  height: 100%;
+  font-size: 1.3rem;
+  font-weight: 500;
+  color: #333;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+}
+
+.quantity-selector-styled button:hover {
+  background-color: #d4ac0d;
+}
+
+.quantity-selector-styled span {
+  flex: 1;
+  text-align: center;
+  font-weight: 600;
+  font-size: 1rem;
+  color: #0076a3; /* bluish number from image */
+}

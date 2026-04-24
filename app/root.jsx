@@ -16,6 +16,7 @@ import appStyles from '~/styles/app.css?url';
 import customIndexStyles from '~/index.css?url';
 import customAppStyles from '~/App.css?url';
 import {PageLayout} from './components/PageLayout';
+import {CartProvider} from '~/context/CartContext';
 
 /**
  * This is important to avoid re-fetching root queries on sub-navigations
@@ -182,9 +183,11 @@ export default function App() {
       shop={data.shop}
       consent={data.consent}
     >
-      <PageLayout {...data}>
-        <Outlet />
-      </PageLayout>
+      <CartProvider>
+        <PageLayout {...data}>
+          <Outlet />
+        </PageLayout>
+      </CartProvider>
     </Analytics.Provider>
   );
 }
