@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import ProductCard from '../components/ProductCard';
-import './Home.css';
+import '../styles/Home.css';
 
 const categories = [
   { id: 1, name: 'Hair Care Oils', image: '/hair_care_oil.png' },

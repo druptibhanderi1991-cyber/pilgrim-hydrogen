@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Star, ShoppingCart, Sparkles, Droplets, ShieldCheck, Smile, Wind, Feather, Lock, Truck } from 'lucide-react';
-import './ProductDetail.css';
+import '../styles/ProductDetail.css';
 
 const productData = {
   id: '1',
