@@ -16,6 +16,7 @@ const productData = {
   circleBadge: 'NEW',
   rankText: '#1 IN SKINCARE',
   image: '/gold_serum.png',
+  images: ['/gold_serum.png', '/after_skin.png', '/before_skin.png'],
   description: 'Achieve glowing, brighter skin in just 5 days* with the advanced 2.0 formula, now enriched with 10% Vitamin C (3-O-Ethyl Ascorbic Acid) and 5% Niacinamide for even faster, more effective results.',
   benefits: ['Brightens Skin', 'Fades Dark Spots', 'Evens Skin Tone']
 };
@@ -56,6 +57,9 @@ const ProductDetail = () => {
   const [activeTab, setActiveTab] = useState('description');
   const [activeAccordion, setActiveAccordion] = useState(1);
   const [sliderPos, setSliderPos] = useState(50);
+  
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   
   const [pincode, setPincode] = useState('');
   const [deliveryInfo, setDeliveryInfo] = useState(null);
@@ -100,6 +104,16 @@ const ProductDetail = () => {
     setIsChecking(false);
   };
 
+  const handleNextImage = (e) => {
+    e.stopPropagation();
+    setActiveImageIndex((prev) => (prev + 1) % product.images.length);
+  };
+
+  const handlePrevImage = (e) => {
+    e.stopPropagation();
+    setActiveImageIndex((prev) => (prev - 1 + product.images.length) % product.images.length);
+  };
+
   const increase = () => setQuantity(q => q + 1);
   const decrease = () => setQuantity(q => q > 1 ? q - 1 : 1);
 
@@ -117,20 +131,26 @@ const ProductDetail = () => {
       </div>
 
       <div className="product-main container">
-        {/* Left Column: Image Gallery with thumbnails on the left */}
         <div className="product-gallery-new">
           <div className="thumbnail-list-vertical">
-            <div className="thumbnail-v active"><img src={product.image} alt="thumb" /></div>
-            <div className="thumbnail-v"><img src={product.image} alt="thumb" /></div>
-            <div className="thumbnail-v"><img src={product.image} alt="thumb" /></div>
+            {product.images.map((img, idx) => (
+              <div 
+                key={idx} 
+                className={`thumbnail-v ${activeImageIndex === idx ? 'active' : ''}`}
+                onClick={() => setActiveImageIndex(idx)}
+                onMouseEnter={() => setActiveImageIndex(idx)}
+              >
+                <img src={img} alt={`thumb ${idx}`} />
+              </div>
+            ))}
           </div>
           
-          <div className="main-image-wrapper">
+          <div className="main-image-wrapper" onClick={() => setIsLightboxOpen(true)}>
             <div className="image-badges-overlay">
               {product.badge && <span className="overlay-badge">{product.badge}</span>}
             </div>
             <div className="zoom-container">
-              <img src={product.image} alt={product.name} className="main-image-zoom" />
+              <img src={product.images[activeImageIndex]} alt={product.name} className="main-image-zoom" />
             </div>
           </div>
         </div>
@@ -565,6 +585,18 @@ const ProductDetail = () => {
           </div>
         </div>
       </div>
+
+      {/* Lightbox Modal */}
+      {isLightboxOpen && (
+        <div className="lightbox-overlay" onClick={() => setIsLightboxOpen(false)}>
+          <button className="lightbox-close" onClick={() => setIsLightboxOpen(false)}>✕</button>
+          <div className="lightbox-content" onClick={e => e.stopPropagation()}>
+            <button className="lightbox-nav prev" onClick={handlePrevImage}>❮</button>
+            <img src={product.images[activeImageIndex]} alt="Fullscreen view" className="lightbox-image" />
+            <button className="lightbox-nav next" onClick={handleNextImage}>❯</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
