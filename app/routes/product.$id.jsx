@@ -166,7 +166,7 @@ const ProductDetail = () => {
           <div className="pdp-rating" style={{marginBottom: '5px'}}>
             <div className="stars">
               {[1, 2, 3, 4, 5].map((s) => (
-                <Star key={s} size={16} fill="#00b0b9" color="#00b0b9" />
+                <Star key={s} size={16} fill="#F5B041" color="#F5B041" />
               ))}
             </div>
             <span className="rating-text">4.8/5 <span style={{textDecoration: 'underline', color: '#666'}}>({product.reviews} Reviews)</span></span>
@@ -178,12 +178,12 @@ const ProductDetail = () => {
           {/* Trust Badges Grid */}
           <div className="trust-badges-container">
             <div className="trust-badges-grid-new">
-              <div className="trust-item-new"><Sparkles size={28} color="#00b0b9" strokeWidth={1.5} /> <span>Glowing, Brighter<br/>Skin</span></div>
-              <div className="trust-item-new"><Droplets size={28} color="#00b0b9" strokeWidth={1.5} /> <span>Reduces Dark Spots</span></div>
-              <div className="trust-item-new"><ShieldCheck size={28} color="#00b0b9" strokeWidth={1.5} /> <span>For all skin types</span></div>
-              <div className="trust-item-new"><Smile size={28} color="#00b0b9" strokeWidth={1.5} /> <span>Beginner- Friendly</span></div>
-              <div className="trust-item-new"><Wind size={28} color="#00b0b9" strokeWidth={1.5} /> <span>Fragrance free</span></div>
-              <div className="trust-item-new"><Feather size={28} color="#00b0b9" strokeWidth={1.5} /> <span>Lightweight & Non-<br/>sticky</span></div>
+              <div className="trust-item-new"><Sparkles size={28} color="#2E7D32" strokeWidth={1.5} /> <span>Glowing, Brighter<br/>Skin</span></div>
+              <div className="trust-item-new"><Droplets size={28} color="#2E7D32" strokeWidth={1.5} /> <span>Reduces Dark Spots</span></div>
+              <div className="trust-item-new"><ShieldCheck size={28} color="#2E7D32" strokeWidth={1.5} /> <span>For all skin types</span></div>
+              <div className="trust-item-new"><Smile size={28} color="#2E7D32" strokeWidth={1.5} /> <span>Beginner- Friendly</span></div>
+              <div className="trust-item-new"><Wind size={28} color="#2E7D32" strokeWidth={1.5} /> <span>Fragrance free</span></div>
+              <div className="trust-item-new"><Feather size={28} color="#2E7D32" strokeWidth={1.5} /> <span>Lightweight & Non-<br/>sticky</span></div>
             </div>
           </div>
 

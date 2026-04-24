@@ -58,7 +58,7 @@
 }
 
 .thumbnail-v.active {
-  border-color: #2E7D32;
+  border-color: #A5D6A7;
 }
 
 .main-image-wrapper {
@@ -139,8 +139,8 @@
 }
 
 .highlight-banner {
-  background-color: #f2fafa; /* Very light cyan */
-  color: #007a82; /* Darker cyan text */
+  background-color: #EAF4F1; /* Very light cyan */
+  color: #1F2937; /* Darker cyan text */
   text-align: center;
   padding: 12px 0;
   font-size: 0.85rem;
@@ -262,7 +262,7 @@
 }
 
 .size-card.active {
-  border: 2px solid #00b0b9;
+  border: 2px solid #A5D6A7;
   padding: 14px 9px; /* Adjust padding to prevent layout shift due to border width */
 }
 
@@ -631,8 +631,8 @@
 }
 
 .tab-btn.active {
-  color: #00b0b9;
-  border-bottom-color: #00b0b9;
+  color: #2E7D32;
+  border-bottom-color: #2E7D32;
 }
 
 .tab-content {
