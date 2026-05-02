@@ -190,25 +190,26 @@ export default function Homepage() {
 
       {/* ── Categories — fully driven by Shopify Storefront API ── */}
       {categoryCollections.length > 0 && (
-        <section className="categories container">
-          <div className="cat-head">
-            <div>
+        <section className="categories">
+          <div className="categories-inner">
+            <div className="cat-head cat-head-center">
               <span className="eyebrow">The Ayurvedic collection</span>
-              <h2 className="section-title" style={{marginTop: 12}}>
+              <h2 className="section-title">
                 Shop by <em>category</em>
               </h2>
             </div>
-            <div className="cat-head-r">
-              <Link to="/collections/all" className="cat-head-link">
+
+            <div className="cat-grid">
+              {categoryCollections.map((collection) => (
+                <CategoryCard key={collection.id} collection={collection} />
+              ))}
+            </div>
+
+            <div className="cat-foot">
+              <Link to="/collections/all" className="cat-viewall-btn">
                 View all products →
               </Link>
             </div>
-          </div>
-
-          <div className="cat-grid">
-            {categoryCollections.map((collection) => (
-              <CategoryCard key={collection.id} collection={collection} />
-            ))}
           </div>
         </section>
       )}
