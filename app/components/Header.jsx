@@ -6,9 +6,10 @@ const NAV_LINKS = [
   {label: 'Bestsellers', to: '/collections/all'},
   {label: 'Face Care', to: '/collections/face-care'},
   {label: 'Hair Care', to: '/collections/hair-care'},
+  {label: 'Skin Care', to: '/collections/skin-care'},
+  {label: 'Body Care', to: '/collections/body-care'},
   {label: 'Wellness', to: '/collections/wellness'},
-  {label: 'Herbs & Oils', to: '/collections/herbs-oils'},
-  {label: 'Rituals', to: '/collections/rituals'},
+  {label: 'Pain Relief', to: '/collections/pain-relief'},
   {label: 'About', to: '/pages/about'},
 ];
 

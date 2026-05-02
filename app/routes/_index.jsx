@@ -38,8 +38,9 @@ export async function loader({context}) {
 }
 
 // Curated horizontal-row category showcase — premium D2C Ayurvedic brand layout.
-// Independent of Shopify collections so the homepage always renders all cards
-// with real imagery (no blank tiles, no grey placeholders).
+// Handles match the Shopify collections so each tile auto-links to the real
+// /collections/<handle> page and uses the collection image uploaded in Shopify.
+// Unsplash images below are fallbacks if a Shopify collection image is missing.
 const STATIC_CATEGORIES = [
   {
     title: 'Face Care',
@@ -52,6 +53,11 @@ const STATIC_CATEGORIES = [
     img: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=480&h=640&fit=crop&q=85',
   },
   {
+    title: 'Skin Care',
+    handle: 'skin-care',
+    img: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?w=480&h=640&fit=crop&q=85',
+  },
+  {
     title: 'Body Care',
     handle: 'body-care',
     img: 'https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?w=480&h=640&fit=crop&q=85',
@@ -62,24 +68,9 @@ const STATIC_CATEGORIES = [
     img: 'https://images.unsplash.com/photo-1515377905703-c4788e51af15?w=480&h=640&fit=crop&q=85',
   },
   {
-    title: 'Herbs & Oils',
-    handle: 'herbs-oils',
-    img: 'https://images.unsplash.com/photo-1611073615452-4889ff37e549?w=480&h=640&fit=crop&q=85',
-  },
-  {
-    title: 'Rituals',
-    handle: 'rituals',
-    img: 'https://images.unsplash.com/photo-1600334129128-685c5582fd35?w=480&h=640&fit=crop&q=85',
-  },
-  {
-    title: 'Gifting',
-    handle: 'gifting',
-    img: 'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=480&h=640&fit=crop&q=85',
-  },
-  {
-    title: 'New In',
-    handle: 'new-in',
-    img: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=480&h=640&fit=crop&q=85',
+    title: 'Pain Relief',
+    handle: 'pain-relief',
+    img: 'https://images.unsplash.com/photo-1512290923902-8a9f81dc236c?w=480&h=640&fit=crop&q=85',
   },
 ];
 
