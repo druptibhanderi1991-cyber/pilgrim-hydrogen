@@ -1,133 +1,125 @@
-import {useLoaderData} from 'react-router';
-import {getPaginationVariables} from '@shopify/hydrogen';
-import {PaginatedResourceSection} from '~/components/PaginatedResourceSection';
-import {ProductItem} from '~/components/ProductItem';
+import {useLoaderData, Link} from 'react-router';
+import {getPaginationVariables, Pagination, Money} from '@shopify/hydrogen';
+import {useCart} from '~/components/CartProvider';
 
-/**
- * @type {Route.MetaFunction}
- */
-export const meta = () => {
-  return [{title: `Hydrogen | Products`}];
-};
+export const meta = () => [{title: 'Vaidhacharya — All Products'}];
 
-/**
- * @param {Route.LoaderArgs} args
- */
-export async function loader(args) {
-  // Start fetching non-critical data without blocking time to first byte
-  const deferredData = loadDeferredData(args);
-
-  // Await the critical data required to render initial state of the page
-  const criticalData = await loadCriticalData(args);
-
-  return {...deferredData, ...criticalData};
-}
-
-/**
- * Load data necessary for rendering content above the fold. This is the critical data
- * needed to render the page. If it's unavailable, the whole page should 400 or 500 error.
- * @param {Route.LoaderArgs}
- */
-async function loadCriticalData({context, request}) {
+export async function loader({context, request}) {
   const {storefront} = context;
-  const paginationVariables = getPaginationVariables(request, {
-    pageBy: 8,
-  });
+  const paginationVariables = getPaginationVariables(request, {pageBy: 12});
 
-  const [{products}] = await Promise.all([
-    storefront.query(CATALOG_QUERY, {
-      variables: {...paginationVariables},
-    }),
-    // Add other queries here, so that they are loaded in parallel
-  ]);
+  const {products} = await storefront.query(CATALOG_QUERY, {
+    variables: {...paginationVariables},
+  });
   return {products};
 }
 
-/**
- * Load data for rendering content below the fold. This data is deferred and will be
- * fetched after the initial page load. If it's unavailable, the page should still 200.
- * Make sure to not throw any errors here, as it will cause the page to 500.
- * @param {Route.LoaderArgs}
- */
-function loadDeferredData({context}) {
-  return {};
+function getBadge(tags = []) {
+  if (tags.includes('bestseller')) return {label: 'BESTSELLER', type: 'hot'};
+  if (tags.includes('new'))        return {label: 'NEW', type: 'new'};
+  if (tags.includes('viral'))      return {label: 'VIRAL', type: 'viral'};
+  return {label: 'AYURVEDIC', type: 'new'};
 }
 
-export default function Collection() {
-  /** @type {LoaderReturnData} */
+function ProductCard({product}) {
+  const {addToCart} = useCart();
+  const badge = getBadge(product.tags);
+  const variant = product.variants?.nodes?.[0];
+
+  function handleAdd(e) {
+    e.preventDefault();
+    if (variant?.id) addToCart(variant.id, 1);
+  }
+
+  return (
+    <Link to={`/products/${product.handle}`} className="product-card">
+      <div className="product-img" style={{background: 'linear-gradient(160deg,#e8c89122,#e8c89155)'}}>
+        <span className={`product-pill ${badge.type}`}>{badge.label}</span>
+        {product.featuredImage?.url ? (
+          <img
+            src={product.featuredImage.url}
+            alt={product.featuredImage.altText || product.title}
+            style={{width: '100%', height: '100%', objectFit: 'contain', padding: 16}}
+            loading="lazy"
+          />
+        ) : (
+          <div style={{fontSize: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--moss)', opacity: 0.3}}>✦</div>
+        )}
+        {variant?.availableForSale && (
+          <button className="product-quick" onClick={handleAdd}>
+            Add to bag <span>+</span>
+          </button>
+        )}
+        {!variant?.availableForSale && (
+          <button className="product-quick" style={{opacity: 0.5, cursor: 'not-allowed'}} onClick={e => e.preventDefault()}>
+            Sold out
+          </button>
+        )}
+      </div>
+      <div className="product-info">
+        <h3 className="product-name">{product.title}</h3>
+        <div className="product-row">
+          <span className="product-price">
+            <Money data={product.priceRange.minVariantPrice} />
+            {product.compareAtPriceRange?.minVariantPrice?.amount > 0 && (
+              <span className="product-mrp">
+                <Money data={product.compareAtPriceRange.minVariantPrice} />
+              </span>
+            )}
+          </span>
+        </div>
+      </div>
+    </Link>
+  );
+}
+
+export default function AllProducts() {
   const {products} = useLoaderData();
 
   return (
-    <div className="collection">
-      <h1>Products</h1>
-      <PaginatedResourceSection
-        connection={products}
-        resourcesClassName="products-grid"
-      >
-        {({node: product, index}) => (
-          <ProductItem
-            key={product.id}
-            product={product}
-            loading={index < 8 ? 'eager' : undefined}
-          />
-        )}
-      </PaginatedResourceSection>
+    <div className="products-page">
+      <div className="page-header">
+        <div className="container">
+          <span className="eyebrow" style={{color: 'var(--sand)'}}>All Products</span>
+          <h1 className="page-title">Pure Ayurvedic <em>formulas</em></h1>
+          <p className="page-sub">Clinically verified, traditionally rooted — every formula we make.</p>
+        </div>
+      </div>
+
+      <div className="container" style={{padding: '48px 32px 80px'}}>
+        <Pagination connection={products}>
+          {({nodes, isLoading, PreviousLink, NextLink}) => (
+            <>
+              <div className="product-grid">
+                {nodes.map(p => <ProductCard key={p.id} product={p} />)}
+              </div>
+              <div style={{display: 'flex', justifyContent: 'center', gap: 16, marginTop: 48}}>
+                <PreviousLink>
+                  {isLoading ? 'Loading…' : <span className="btn btn-paper">← Previous</span>}
+                </PreviousLink>
+                <NextLink>
+                  {isLoading ? 'Loading…' : <span className="btn btn-moss">Load more →</span>}
+                </NextLink>
+              </div>
+            </>
+          )}
+        </Pagination>
+      </div>
     </div>
   );
 }
 
-const COLLECTION_ITEM_FRAGMENT = `#graphql
-  fragment MoneyCollectionItem on MoneyV2 {
-    amount
-    currencyCode
-  }
-  fragment CollectionItem on Product {
-    id
-    handle
-    title
-    featuredImage {
-      id
-      altText
-      url
-      width
-      height
-    }
-    priceRange {
-      minVariantPrice {
-        ...MoneyCollectionItem
-      }
-      maxVariantPrice {
-        ...MoneyCollectionItem
-      }
-    }
-  }
-`;
-
-// NOTE: https://shopify.dev/docs/api/storefront/latest/objects/product
 const CATALOG_QUERY = `#graphql
-  query Catalog(
-    $country: CountryCode
-    $language: LanguageCode
-    $first: Int
-    $last: Int
-    $startCursor: String
-    $endCursor: String
-  ) @inContext(country: $country, language: $language) {
+  query Catalog($first: Int, $last: Int, $startCursor: String, $endCursor: String) {
     products(first: $first, last: $last, before: $startCursor, after: $endCursor) {
       nodes {
-        ...CollectionItem
+        id title handle tags
+        priceRange { minVariantPrice { amount currencyCode } }
+        compareAtPriceRange { minVariantPrice { amount currencyCode } }
+        featuredImage { url altText }
+        variants(first: 1) { nodes { id availableForSale } }
       }
-      pageInfo {
-        hasPreviousPage
-        hasNextPage
-        startCursor
-        endCursor
-      }
+      pageInfo { hasPreviousPage hasNextPage startCursor endCursor }
     }
   }
-  ${COLLECTION_ITEM_FRAGMENT}
 `;
-
-/** @typedef {import('./+types/collections.all').Route} Route */
-/** @typedef {import('storefrontapi.generated').CollectionItemFragment} CollectionItemFragment */
-/** @typedef {import('@shopify/remix-oxygen').SerializeFrom<typeof loader>} LoaderReturnData */

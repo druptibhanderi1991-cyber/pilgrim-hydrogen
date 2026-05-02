@@ -13,10 +13,9 @@ import favicon from '~/assets/favicon.svg';
 import {FOOTER_QUERY, HEADER_QUERY} from '~/lib/fragments';
 import resetStyles from '~/styles/reset.css?url';
 import appStyles from '~/styles/app.css?url';
-import customIndexStyles from '~/index.css?url';
-import customAppStyles from '~/App.css?url';
+import vaidhacharyaStyles from '~/styles/vaidhacharya.css?url';
 import {PageLayout} from './components/PageLayout';
-import {CartProvider} from '~/context/CartContext';
+import {CartProvider} from './components/CartProvider';
 
 /**
  * This is important to avoid re-fetching root queries on sub-navigations
@@ -49,17 +48,16 @@ export const shouldRevalidate = ({formMethod, currentUrl, nextUrl}) => {
  */
 export function links() {
   return [
+    {rel: 'preconnect', href: 'https://cdn.shopify.com'},
+    {rel: 'preconnect', href: 'https://shop.app'},
+    {rel: 'preconnect', href: 'https://fonts.googleapis.com'},
+    {rel: 'preconnect', href: 'https://fonts.gstatic.com', crossOrigin: 'anonymous'},
     {
-      rel: 'preconnect',
-      href: 'https://cdn.shopify.com',
-    },
-    {
-      rel: 'preconnect',
-      href: 'https://shop.app',
+      rel: 'stylesheet',
+      href: 'https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,300;1,9..144,400&family=Inter:wght@300;400;500;600;700&display=swap',
     },
     {rel: 'icon', type: 'image/svg+xml', href: favicon},
-    {rel: 'stylesheet', href: customIndexStyles},
-    {rel: 'stylesheet', href: customAppStyles},
+    {rel: 'stylesheet', href: vaidhacharyaStyles},
   ];
 }
 
@@ -155,6 +153,7 @@ export function Layout({children}) {
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <title>Vaidhacharya — Pure Ayurvedic Beauty &amp; Wellness</title>
         <link rel="stylesheet" href={resetStyles}></link>
         <link rel="stylesheet" href={appStyles}></link>
         <Meta />
