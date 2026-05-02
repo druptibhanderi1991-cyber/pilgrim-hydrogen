@@ -37,16 +37,51 @@ export async function loader({context}) {
   return data;
 }
 
-const CAT_STYLES = {
-  'face-care':  {tint: 'rgba(200,149,42,0.18)', img: 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=480&h=560&fit=crop&q=80'},
-  'hair-care':  {tint: 'rgba(26,40,16,0.15)',   img: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=480&h=560&fit=crop&q=80'},
-  'body-care':  {tint: 'rgba(90,62,43,0.12)',   img: 'https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?w=480&h=560&fit=crop&q=80'},
-  'wellness':   {tint: 'rgba(45,90,27,0.15)',   img: 'https://images.unsplash.com/photo-1466637574441-749b8f19452f?w=480&h=560&fit=crop&q=80'},
-  'herbs-oils': {tint: 'rgba(200,149,42,0.1)',  img: 'https://images.unsplash.com/photo-1515377905703-c4788e51af15?w=480&h=560&fit=crop&q=80'},
-  'rituals':    {tint: 'rgba(26,40,16,0.1)',    img: 'https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?w=480&h=560&fit=crop&q=80'},
-  'gifting':    {tint: 'rgba(178,106,92,0.12)', img: 'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=480&h=560&fit=crop&q=80'},
-  'new-in':     {tint: 'rgba(58,107,26,0.1)',   img: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=480&h=560&fit=crop&q=80'},
-};
+// Curated horizontal-row category showcase — premium D2C Ayurvedic brand layout.
+// Independent of Shopify collections so the homepage always renders all cards
+// with real imagery (no blank tiles, no grey placeholders).
+const STATIC_CATEGORIES = [
+  {
+    title: 'Face Care',
+    handle: 'face-care',
+    img: 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=480&h=640&fit=crop&q=85',
+  },
+  {
+    title: 'Hair Care',
+    handle: 'hair-care',
+    img: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=480&h=640&fit=crop&q=85',
+  },
+  {
+    title: 'Body Care',
+    handle: 'body-care',
+    img: 'https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?w=480&h=640&fit=crop&q=85',
+  },
+  {
+    title: 'Wellness',
+    handle: 'wellness',
+    img: 'https://images.unsplash.com/photo-1515377905703-c4788e51af15?w=480&h=640&fit=crop&q=85',
+  },
+  {
+    title: 'Herbs & Oils',
+    handle: 'herbs-oils',
+    img: 'https://images.unsplash.com/photo-1611073615452-4889ff37e549?w=480&h=640&fit=crop&q=85',
+  },
+  {
+    title: 'Rituals',
+    handle: 'rituals',
+    img: 'https://images.unsplash.com/photo-1600334129128-685c5582fd35?w=480&h=640&fit=crop&q=85',
+  },
+  {
+    title: 'Gifting',
+    handle: 'gifting',
+    img: 'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=480&h=640&fit=crop&q=85',
+  },
+  {
+    title: 'New In',
+    handle: 'new-in',
+    img: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=480&h=640&fit=crop&q=85',
+  },
+];
 
 function getBadge(tags = []) {
   if (tags.includes('bestseller')) return {label: 'BESTSELLER', type: 'hot'};
@@ -123,35 +158,43 @@ export default function Homepage() {
 
       <MarqueeBar />
 
-      {/* ── Categories ── */}
-      <section className="categories container">
-        <div className="cat-head">
-          <div>
-            <span className="eyebrow">The Ayurvedic collection</span>
-            <h2 className="section-title" style={{marginTop:12}}>Shop by <em>category</em></h2>
+      {/* ── Categories ── Premium D2C horizontal row */}
+      <section className="ayur-cat-section">
+        <div className="ayur-cat-container">
+          <div className="ayur-cat-head">
+            <div>
+              <p className="ayur-cat-eyebrow">THE AYURVEDIC COLLECTION</p>
+              <h2 className="ayur-cat-title">
+                Shop by <em>category</em>
+              </h2>
+            </div>
+            <Link to="/collections/all" className="ayur-cat-viewall">
+              View all products →
+            </Link>
           </div>
-          <div className="cat-head-r">
-            <Link to="/collections/all" className="cat-head-link">View all products →</Link>
+
+          <div className="ayur-cat-row">
+            {STATIC_CATEGORIES.map((c) => {
+              const match = collections.find((col) => col.handle === c.handle);
+              const href = match ? `/collections/${c.handle}` : `/collections/all?cat=${c.handle}`;
+              const imgSrc = match?.image?.url || c.img;
+              return (
+                <Link key={c.handle} to={href} className="ayur-cat-card">
+                  <img
+                    src={imgSrc}
+                    alt={c.title}
+                    className="ayur-cat-img"
+                    loading="lazy"
+                  />
+                  <div className="ayur-cat-overlay" />
+                  <div className="ayur-cat-label">
+                    <span className="ayur-cat-label-text">{c.title}</span>
+                    <span className="ayur-cat-label-arrow">→</span>
+                  </div>
+                </Link>
+              );
+            })}
           </div>
-        </div>
-        <div className="cat-grid">
-          {collections.slice(0,8).map(c => {
-            const s = CAT_STYLES[c.handle] || {tint:'rgba(26,40,16,0.1)', img:''};
-            const imgSrc = c.image?.url || s.img;
-            return (
-              <Link key={c.id} to={`/collections/${c.handle}`} className="cat-tile">
-                {imgSrc
-                  ? <img src={imgSrc} alt={c.title} className="cat-photo" loading="lazy"/>
-                  : <div className="cat-photo" style={{background:'var(--paper-2)'}}/>
-                }
-                <div className="cat-tint" style={{background:s.tint}}/>
-                <div className="cat-overlay">
-                  <span className="cat-overlay-name">{c.title}</span>
-                  <span className="cat-overlay-arrow">→</span>
-                </div>
-              </Link>
-            );
-          })}
         </div>
       </section>
 
