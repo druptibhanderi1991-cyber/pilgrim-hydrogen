@@ -1498,3 +1498,149 @@ img { max-width: 100%; display: block; }
   .ayur-cat-card { flex: 0 0 150px; width: 150px; height: 210px; }
   .ayur-cat-head { flex-direction: column; align-items: flex-start; }
 }
+
+/* ─────────────────────────────────────────────────────────────
+   FIXES — Header announcement, navbar actions/cart badge, marquee
+   (JSX classes that previously had no CSS, causing layout breaks)
+   ───────────────────────────────────────────────────────────── */
+
+/* Announcement bar text */
+.announce {
+  text-align: center;
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.announce-text {
+  margin: 0;
+  font-size: 12.5px;
+  letter-spacing: 0.06em;
+  color: var(--paper, #faf8f2);
+  font-weight: 500;
+  padding: 0 16px;
+  text-align: center;
+  width: 100%;
+}
+
+/* Navbar right-side actions cluster */
+.navbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  justify-content: flex-end;
+}
+.navbar-icon {
+  position: relative;          /* anchors .cart-badge correctly */
+  width: 40px;
+  height: 40px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 999px;
+  color: var(--ink, #1a2810);
+  transition: background 0.2s ease, color 0.2s ease;
+  flex-shrink: 0;
+}
+.navbar-icon:hover {
+  background: rgba(26, 40, 16, 0.08);
+  color: var(--moss, #2d5a1b);
+}
+.navbar-cart {
+  position: relative;          /* explicit anchor for the badge */
+}
+
+/* Cart badge — sits on the cart icon, NOT in the page corner */
+.navbar-cart .cart-badge,
+.cart-badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  background: var(--terracotta, #b04a2a);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  box-shadow: 0 0 0 2px var(--paper, #faf8f2);
+  pointer-events: none;
+}
+
+/* Mobile hamburger — hidden on desktop */
+.navbar-hamburger {
+  display: none;
+  width: 40px; height: 40px;
+  background: transparent; border: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+}
+.navbar-hamburger span {
+  display: block;
+  width: 20px; height: 1.5px;
+  background: var(--ink, #1a2810);
+  transition: transform 0.2s ease;
+}
+
+/* Marquee fixes — single-line scroll, no wrap */
+.marquee-wrap {
+  background: var(--moss-deep, #0f2a08);
+  color: var(--sand, #e8c891);
+  overflow: hidden;
+  white-space: nowrap;
+  padding: 12px 0;
+  width: 100%;
+}
+.marquee-track {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  animation: marquee-scroll 38s linear infinite;
+  will-change: transform;
+}
+.marquee-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  padding: 0 22px;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-weight: 500;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.marquee-sep {
+  color: var(--terracotta, #b04a2a);
+  font-size: 11px;
+}
+@keyframes marquee-scroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+/* Mobile responsiveness for header */
+@media (max-width: 900px) {
+  .nav-links { display: none; }
+  .navbar-hamburger { display: inline-flex; }
+  .navbar-inner { grid-template-columns: 1fr auto; padding: 14px 20px; }
+  .mobile-menu {
+    display: flex; flex-direction: column;
+    background: var(--paper, #faf8f2);
+    border-top: 1px solid var(--line, #e6e2d8);
+    padding: 16px 20px;
+  }
+  .mobile-link {
+    padding: 12px 0;
+    font-size: 14px;
+    color: var(--ink, #1a2810);
+    border-bottom: 1px solid var(--line, #e6e2d8);
+  }
+}
