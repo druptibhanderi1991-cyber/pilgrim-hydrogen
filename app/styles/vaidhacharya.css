@@ -287,91 +287,84 @@ img { max-width: 100%; display: block; }
 }
 .cat-head-link:hover { color: var(--terracotta); border-color: var(--terracotta); }
 
-/* ── Categories ─────────────────────────────────────────── */
+/* ── Categories — pixel-parity with the localhost (Vite) Categories.jsx ── */
 .categories { padding: 80px 0; }
+
 .cat-grid {
   display: grid;
-  grid-template-columns: repeat(8, 1fr);
+  grid-template-columns: repeat(8, minmax(0, 1fr));
   gap: 10px;
 }
 
-/* Feature layout: 1 large hero tile + 5 standard tiles in a 3-column grid */
-.cat-grid-feature {
-  grid-template-columns: 1.4fr 1fr 1fr 1fr;
-  grid-template-rows: 280px 280px;
-  gap: 16px;
+/* Tablet: 4 across (2 rows of 4) */
+@media (max-width: 1100px) {
+  .cat-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
 }
-.cat-grid-feature .cat-tile-lg {
-  grid-row: span 2;
-  aspect-ratio: auto;
-}
-.cat-grid-feature .cat-tile-sm {
-  aspect-ratio: auto;
-}
-
-@media (max-width: 900px) {
-  .cat-grid-feature {
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: repeat(3, 220px);
+/* Mobile: smooth horizontal swipe carousel */
+@media (max-width: 700px) {
+  .cat-grid {
+    display: flex;
+    grid-template-columns: none;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    padding: 4px 0 12px;
+    gap: 12px;
   }
-  .cat-grid-feature .cat-tile-lg { grid-row: span 1; grid-column: span 2; }
+  .cat-grid::-webkit-scrollbar { display: none; }
+  .cat-grid > .cat-tile {
+    flex: 0 0 60%;
+    scroll-snap-align: start;
+  }
 }
 
 .cat-tile {
-  position: relative; border-radius: var(--radius); overflow: hidden;
-  aspect-ratio: 4 / 5; cursor: pointer;
+  position: relative;
+  border-radius: var(--radius);
+  overflow: hidden;
+  aspect-ratio: 4 / 5;
+  cursor: pointer;
   transition: transform .28s ease, box-shadow .28s ease;
-  box-shadow: var(--shadow-sm); display: block;
+  box-shadow: var(--shadow-sm);
+  display: block;
+  background: var(--paper-2);
 }
 .cat-tile:hover { transform: translateY(-5px); box-shadow: var(--shadow-lg); }
 .cat-tile:hover .cat-photo { transform: scale(1.07); }
-.cat-tile:hover .cat-overlay-arrow { transform: translateX(4px); letter-spacing: 0.06em; }
+.cat-tile:hover .cat-overlay-arrow { transform: translateX(3px); }
 
-/* Photo fills the whole card */
+/* Photo fills the whole card with object-fit cover */
 .cat-photo {
   position: absolute; inset: 0;
-  width: 100%; height: 100%;
+  width: 100% !important; height: 100% !important;
   object-fit: cover; object-position: center;
-  transition: transform .55s ease;
+  transition: transform .45s ease;
   display: block;
 }
-
-/* Colour tint + permanent dark gradient for legibility */
-.cat-tint {
-  position: absolute; inset: 0;
-  pointer-events: none;
-  mix-blend-mode: multiply;
+.cat-photo-placeholder {
+  background: linear-gradient(135deg, var(--paper-2) 0%, var(--sand) 100%);
 }
 
 /* Bottom fade + name */
 .cat-overlay {
   position: absolute; bottom: 0; left: 0; right: 0;
-  background: linear-gradient(to top, rgba(10,20,6,0.92) 0%, rgba(10,20,6,0.45) 50%, rgba(10,20,6,0.05) 100%);
-  padding: 60px 18px 18px;
-  display: flex; flex-direction: column; align-items: flex-start; gap: 4px;
-}
-.cat-overlay-eyebrow {
-  font-size: 10.5px; font-weight: 500;
-  color: rgba(232,200,145,0.95);
-  letter-spacing: 0.14em; text-transform: uppercase;
-  text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+  background: linear-gradient(to top, rgba(10, 20, 6, 0.82) 0%, rgba(10, 20, 6, 0.30) 55%, transparent 100%);
+  padding: 28px 12px 12px;
+  display: flex; align-items: flex-end; justify-content: space-between;
 }
 .cat-overlay-name {
-  font-family: 'Fraunces', Georgia, serif;
-  font-size: 22px; font-weight: 500; color: #fff;
-  letter-spacing: 0.01em; line-height: 1.15;
-  text-shadow: 0 2px 6px rgba(0,0,0,0.5);
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #fff;
+  letter-spacing: 0.04em;
+  line-height: 1.2;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
 }
-.cat-grid-feature .cat-tile-lg .cat-overlay-name { font-size: 30px; }
 .cat-overlay-arrow {
-  margin-top: 6px;
-  font-size: 11.5px; font-weight: 600; color: #fff;
-  letter-spacing: 0.04em; text-transform: uppercase;
-  border-bottom: 1px solid rgba(255,255,255,0.6);
-  padding-bottom: 2px;
-  transition: transform .22s ease, letter-spacing .22s ease;
-  text-shadow: 0 1px 4px rgba(0,0,0,0.4);
-  display: inline-block;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.85);
+  transition: transform .22s ease;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
 }
 
 /* ── Product Grid shared ────────────────────────────────── */
@@ -1338,167 +1331,6 @@ img { max-width: 100%; display: block; }
   .cart-item-right { display: none; }
   .products-toolbar { flex-direction: column; align-items: stretch; }
 }
-
-/* ─────────────────────────────────────────────────────────────
-   AYURVEDIC CATEGORY SECTION — premium D2C horizontal row
-   Scoped under .ayur-cat-* so legacy .cat-* styles cannot override.
-   ───────────────────────────────────────────────────────────── */
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;1,500&display=swap');
-
-.ayur-cat-section {
-  background: #F6F5F2;
-  padding: 80px 0;
-  width: 100%;
-}
-.ayur-cat-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 20px;
-}
-.ayur-cat-head {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 24px;
-  margin-bottom: 36px;
-  flex-wrap: wrap;
-}
-.ayur-cat-eyebrow {
-  font-size: 12px;
-  letter-spacing: 2px;
-  color: #7A8C7F;
-  margin: 0 0 10px 0;
-  font-weight: 500;
-  text-transform: uppercase;
-}
-.ayur-cat-title {
-  font-family: 'Playfair Display', Georgia, serif;
-  font-size: 48px;
-  line-height: 1.2;
-  font-weight: 500;
-  color: #1B3A2F;
-  margin: 0;
-  letter-spacing: -0.01em;
-}
-.ayur-cat-title em {
-  font-style: italic;
-  color: #6B8E23;
-  font-weight: 500;
-}
-.ayur-cat-viewall {
-  font-size: 14px;
-  color: #2E7D32;
-  text-decoration: none;
-  font-weight: 500;
-  white-space: nowrap;
-  transition: color 0.2s ease, transform 0.2s ease;
-}
-.ayur-cat-viewall:hover {
-  color: #1B3A2F;
-  transform: translateX(3px);
-}
-
-/* The grid — FLEX ROW, no stacking */
-.ayur-cat-row {
-  display: flex !important;
-  flex-direction: row !important;
-  gap: 20px;
-  overflow-x: auto;
-  padding: 8px 2px 16px 2px;
-  scroll-snap-type: x mandatory;
-  scrollbar-width: thin;
-  scrollbar-color: #c8d4c4 transparent;
-}
-.ayur-cat-row::-webkit-scrollbar { height: 6px; }
-.ayur-cat-row::-webkit-scrollbar-thumb {
-  background: #c8d4c4;
-  border-radius: 3px;
-}
-.ayur-cat-row::-webkit-scrollbar-track { background: transparent; }
-
-/* Card — fixed dimensions, NEVER blank */
-.ayur-cat-card {
-  flex: 0 0 180px;
-  width: 180px;
-  height: 240px;
-  border-radius: 16px;
-  overflow: hidden;
-  position: relative;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.10);
-  background: #d8d4cc; /* fallback only — image always loads on top */
-  display: block;
-  text-decoration: none;
-  scroll-snap-align: start;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  cursor: pointer;
-}
-.ayur-cat-card:hover {
-  transform: scale(1.05);
-  box-shadow: 0 18px 38px rgba(0, 0, 0, 0.18);
-}
-
-.ayur-cat-img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center;
-  display: block;
-  transition: transform 0.5s ease;
-}
-.ayur-cat-card:hover .ayur-cat-img {
-  transform: scale(1.08);
-}
-
-.ayur-cat-overlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0) 65%);
-  pointer-events: none;
-}
-
-.ayur-cat-label {
-  position: absolute;
-  left: 16px;
-  right: 16px;
-  bottom: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  z-index: 2;
-}
-.ayur-cat-label-text {
-  color: #ffffff;
-  font-size: 14px;
-  font-weight: 500;
-  letter-spacing: 0.02em;
-  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.45);
-}
-.ayur-cat-label-arrow {
-  color: #ffffff;
-  font-size: 16px;
-  font-weight: 500;
-  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.45);
-  transition: transform 0.25s ease;
-}
-.ayur-cat-card:hover .ayur-cat-label-arrow {
-  transform: translateX(4px);
-}
-
-/* Responsive */
-@media (max-width: 900px) {
-  .ayur-cat-section { padding: 56px 0; }
-  .ayur-cat-title { font-size: 36px; }
-  .ayur-cat-card { flex: 0 0 160px; width: 160px; height: 220px; }
-}
-@media (max-width: 600px) {
-  .ayur-cat-title { font-size: 30px; }
-  .ayur-cat-card { flex: 0 0 150px; width: 150px; height: 210px; }
-  .ayur-cat-head { flex-direction: column; align-items: flex-start; }
-}
-
 /* ─────────────────────────────────────────────────────────────
    FIXES — Header announcement, navbar actions/cart badge, marquee
    (JSX classes that previously had no CSS, causing layout breaks)

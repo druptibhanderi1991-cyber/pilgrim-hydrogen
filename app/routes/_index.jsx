@@ -1,12 +1,22 @@
 import {useLoaderData, Link} from 'react-router';
 import {Money} from '@shopify/hydrogen';
+import CategoryCard from '~/components/CategoryCard';
 
 const HOME_QUERY = `#graphql
   query HomePageData {
-    featuredCollection: collections(first: 8, sortKey: UPDATED_AT, reverse: true) {
+    # Pull more than we'll show so we can filter empties and still render 8.
+    featuredCollection: collections(first: 20) {
       nodes {
-        id title handle
-        image { url altText }
+        id
+        title
+        handle
+        image { url altText width height }
+        products(first: 1) {
+          nodes {
+            id
+            featuredImage { url altText width height }
+          }
+        }
       }
     }
     products(first: 8, sortKey: BEST_SELLING) {
@@ -31,48 +41,33 @@ const HOME_QUERY = `#graphql
 
 export const meta = () => [{title: 'Vaidhacharya — Pure Ayurvedic Beauty & Wellness'}];
 
+/**
+ * Filter collections to only those that are ready to display:
+ *  - has at least one product
+ *  - has a usable image (collection image OR first product's featured image)
+ *  - is not a Shopify-default empty placeholder (e.g. "Home page", "Frontpage")
+ * Preserves the order returned by Shopify (admin sort).
+ */
+function curateCollections(nodes = []) {
+  const SKIP = new Set(['home-page', 'frontpage', 'all']);
+  return nodes
+    .filter((c) => !SKIP.has(c.handle))
+    .filter((c) => (c.products?.nodes?.length || 0) > 0)
+    .filter((c) => c.image?.url || c.products?.nodes?.[0]?.featuredImage?.url)
+    .slice(0, 8); // cap at 8 tiles for the homepage row
+}
+
 export async function loader({context}) {
   const {storefront} = context;
   const data = await storefront.query(HOME_QUERY);
-  return data;
+  return {
+    ...data,
+    categoryCollections: curateCollections(data.featuredCollection?.nodes),
+  };
 }
 
-// Curated horizontal-row category showcase — premium D2C Ayurvedic brand layout.
-// Handles match the Shopify collections so each tile auto-links to the real
-// /collections/<handle> page and uses the collection image uploaded in Shopify.
-// Unsplash images below are fallbacks if a Shopify collection image is missing.
-const STATIC_CATEGORIES = [
-  {
-    title: 'Face Care',
-    handle: 'face-care',
-    img: 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=480&h=640&fit=crop&q=85',
-  },
-  {
-    title: 'Hair Care',
-    handle: 'hair-care',
-    img: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=480&h=640&fit=crop&q=85',
-  },
-  {
-    title: 'Skin Care',
-    handle: 'skin-care',
-    img: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?w=480&h=640&fit=crop&q=85',
-  },
-  {
-    title: 'Body Care',
-    handle: 'body-care',
-    img: 'https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?w=480&h=640&fit=crop&q=85',
-  },
-  {
-    title: 'Wellness',
-    handle: 'wellness',
-    img: 'https://images.unsplash.com/photo-1515377905703-c4788e51af15?w=480&h=640&fit=crop&q=85',
-  },
-  {
-    title: 'Pain Relief',
-    handle: 'pain-relief',
-    img: 'https://images.unsplash.com/photo-1512290923902-8a9f81dc236c?w=480&h=640&fit=crop&q=85',
-  },
-];
+// Categories are now fully driven by Shopify Storefront API (see HOME_QUERY +
+// curateCollections in the loader). No hardcoded category list remains.
 
 function getBadge(tags = []) {
   if (tags.includes('bestseller')) return {label: 'BESTSELLER', type: 'hot'};
@@ -103,8 +98,7 @@ const WHY_CARDS = [
 ];
 
 export default function Homepage() {
-  const {featuredCollection, products, newProducts} = useLoaderData();
-  const collections = featuredCollection?.nodes || [];
+  const {categoryCollections, products, newProducts} = useLoaderData();
   const allProducts  = products?.nodes || [];
   const newArrivals  = newProducts?.nodes || [];
 
@@ -194,45 +188,30 @@ export default function Homepage() {
 
       <MarqueeBar />
 
-      {/* ── Categories ── Premium D2C horizontal row */}
-      <section className="ayur-cat-section">
-        <div className="ayur-cat-container">
-          <div className="ayur-cat-head">
+      {/* ── Categories — fully driven by Shopify Storefront API ── */}
+      {categoryCollections.length > 0 && (
+        <section className="categories container">
+          <div className="cat-head">
             <div>
-              <p className="ayur-cat-eyebrow">THE AYURVEDIC COLLECTION</p>
-              <h2 className="ayur-cat-title">
+              <span className="eyebrow">The Ayurvedic collection</span>
+              <h2 className="section-title" style={{marginTop: 12}}>
                 Shop by <em>category</em>
               </h2>
             </div>
-            <Link to="/collections/all" className="ayur-cat-viewall">
-              View all products →
-            </Link>
+            <div className="cat-head-r">
+              <Link to="/collections/all" className="cat-head-link">
+                View all products →
+              </Link>
+            </div>
           </div>
 
-          <div className="ayur-cat-row">
-            {STATIC_CATEGORIES.map((c) => {
-              const match = collections.find((col) => col.handle === c.handle);
-              const href = match ? `/collections/${c.handle}` : `/collections/all?cat=${c.handle}`;
-              const imgSrc = match?.image?.url || c.img;
-              return (
-                <Link key={c.handle} to={href} className="ayur-cat-card">
-                  <img
-                    src={imgSrc}
-                    alt={c.title}
-                    className="ayur-cat-img"
-                    loading="lazy"
-                  />
-                  <div className="ayur-cat-overlay" />
-                  <div className="ayur-cat-label">
-                    <span className="ayur-cat-label-text">{c.title}</span>
-                    <span className="ayur-cat-label-arrow">→</span>
-                  </div>
-                </Link>
-              );
-            })}
+          <div className="cat-grid">
+            {categoryCollections.map((collection) => (
+              <CategoryCard key={collection.id} collection={collection} />
+            ))}
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* ── Bestsellers ── */}
       <section className="summer">
