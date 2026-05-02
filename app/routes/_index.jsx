@@ -213,46 +213,48 @@ export default function Homepage() {
         </section>
       )}
 
-      {/* ── Bestsellers ── */}
-      <section className="summer">
-        <div className="container">
-          <div className="cat-head">
+      {/* ── Trending Now — premium minimal Ayurvedic ritual showcase ── */}
+      <section className="trending">
+        <div className="trending-container">
+          <div className="trending-head">
             <div>
-              <span className="eyebrow">Bestselling rituals</span>
-              <h2 className="section-title" style={{marginTop:12}}>Top <em>formulas</em></h2>
-              <p className="section-sub">Time-tested Ayurvedic formulas, backed by modern clinical research.</p>
+              <p className="trending-eyebrow">BEST SELLING RITUALS</p>
+              <h2 className="trending-title">
+                Trending <em>formulas</em>
+              </h2>
+              <p className="trending-sub">
+                Time-tested Ayurvedic formulas, backed by modern clinical research.
+              </p>
             </div>
-            <div className="cat-head-r">
-              <Link to="/collections/all" className="cat-head-link">Shop all →</Link>
-            </div>
+            <Link to="/collections/all" className="trending-shopall">
+              Shop all →
+            </Link>
           </div>
-          <div className="product-grid">
-            {allProducts.slice(0,4).map(p => {
-              const badge = getBadge(p.tags);
-              return (
-                <Link key={p.id} to={`/products/${p.handle}`} className="product-card">
-                  <div className="product-img" style={{background:'linear-gradient(160deg,#e8c89133,#e8c89166)'}}>
-                    <span className={`product-pill ${badge.type}`}>{badge.label}</span>
-                    {p.featuredImage?.url
-                      ? <img src={p.featuredImage.url} alt={p.featuredImage.altText||p.title} style={{width:'100%',height:'100%',objectFit:'contain',padding:16}} loading="lazy"/>
-                      : <div style={{fontSize:40,display:'flex',alignItems:'center',justifyContent:'center',height:'100%',color:'var(--moss)',opacity:0.3}}>✦</div>
-                    }
-                    <button className="product-quick" onClick={e=>e.preventDefault()}>Add to bag <span>+</span></button>
+
+          <div className="trending-grid">
+            {allProducts.slice(0, 4).map((p) => (
+              <Link key={p.id} to={`/products/${p.handle}`} className="trending-card">
+                <div className="trending-img-wrap">
+                  <span className="trending-badge">AYURVEDIC</span>
+                  {p.featuredImage?.url ? (
+                    <img
+                      src={p.featuredImage.url}
+                      alt={p.featuredImage.altText || p.title}
+                      className="trending-img"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div className="trending-img-fallback">✦</div>
+                  )}
+                </div>
+                <div className="trending-info">
+                  <h3 className="trending-name">{p.title}</h3>
+                  <div className="trending-price">
+                    <Money data={p.priceRange.minVariantPrice} />
                   </div>
-                  <div className="product-info">
-                    <h3 className="product-name">{p.title}</h3>
-                    <div className="product-row">
-                      <span className="product-price">
-                        <Money data={p.priceRange.minVariantPrice}/>
-                        {p.compareAtPriceRange?.minVariantPrice?.amount > 0 && (
-                          <span className="product-mrp"><Money data={p.compareAtPriceRange.minVariantPrice}/></span>
-                        )}
-                      </span>
-                    </div>
-                  </div>
-                </Link>
-              );
-            })}
+                </div>
+              </Link>
+            ))}
           </div>
         </div>
       </section>
