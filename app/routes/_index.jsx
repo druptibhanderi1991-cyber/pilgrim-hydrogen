@@ -122,36 +122,81 @@ export default function Homepage() {
       {/* ── Hero ── */}
       <section className="hero">
         <div className="hero-grid container">
-          <div className="hero-content">
+          <div className="hero-text">
             <div className="hero-eyebrow">
-              <span className="hero-eyebrow-line" />Ancient formula · N° 01
+              <span className="hero-eyebrow-line" />
+              <span className="eyebrow">5000 years of wisdom · Spring '26</span>
             </div>
-            <h1 className="hero-title">Ancient Ayurveda,<br /><em>made modern.</em></h1>
-            <p className="hero-sub">Clinically validated formulas rooted in the Charaka Samhita — pure, traceable, and proven to work.</p>
-            <div className="hero-cta">
-              <Link to="/collections/all" className="btn btn-moss">Shop all formulas <span className="arrow">→</span></Link>
-              <Link to="/pages/about" className="btn btn-paper">Our story</Link>
+            <h1 className="hero-title">
+              Ancient<br />Ayurveda,<br /><em>made modern.</em>
+            </h1>
+            <p className="hero-lede">
+              Pure Ayurvedic formulas rooted in India's 5000-year-old healing tradition.
+              Every ingredient sourced directly from certified organic farms. No fillers,
+              no synthetics — only what nature perfected.
+            </p>
+            <div className="hero-cta-row">
+              <Link to="/collections/all" className="btn btn-primary">
+                Explore the range <span className="arrow">→</span>
+              </Link>
+              <Link to="/pages/about" className="btn btn-ghost">Our story</Link>
             </div>
-            <div className="hero-trust">
-              {['PETA Certified','NABL Tested','GMP Grade','100% Vegan'].map(b => (
-                <span key={b} className="hero-trust-pill">{b}</span>
-              ))}
+            <div className="hero-meta">
+              <div className="hero-meta-item">
+                <span className="num">5000+</span>
+                <span className="lbl">Years of heritage</span>
+              </div>
+              <div className="hero-meta-item">
+                <span className="num">4.8★</span>
+                <span className="lbl">Avg. rating</span>
+              </div>
+              <div className="hero-meta-item">
+                <span className="num">100%</span>
+                <span className="lbl">Natural · Vegan</span>
+              </div>
             </div>
           </div>
+
           <div className="hero-visual">
-            <svg viewBox="0 0 320 420" width="320" height="420" xmlns="http://www.w3.org/2000/svg" style={{filter:'drop-shadow(0 32px 64px rgba(26,40,16,0.35))'}}>
-              <defs><linearGradient id="hG" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#e8c891"/><stop offset="100%" stopColor="#8a6030"/></linearGradient></defs>
-              <path d="M60 100 Q60 80 160 80 Q260 80 260 100 L248 380 Q248 400 160 400 Q72 400 72 380 Z" fill="url(#hG)"/>
-              <rect x="82" y="56" width="156" height="36" rx="8" fill="#1e4010"/>
-              <rect x="104" y="36" width="112" height="28" rx="7" fill="#0e2008"/>
-              <rect x="72" y="136" width="176" height="196" rx="5" fill="#faf8f2" opacity="0.94"/>
-              <text x="160" y="184" textAnchor="middle" fontFamily="Fraunces,Georgia,serif" fontStyle="italic" fontSize="16" fill="#1a2810">Vaidhacharya</text>
-              <line x1="100" y1="196" x2="220" y2="196" stroke="#1a2810" strokeWidth="0.6"/>
-              <text x="160" y="224" textAnchor="middle" fontFamily="Inter,sans-serif" fontSize="9" letterSpacing="2.5" fill="#6b7260">N° 01 — KUMKUMADI</text>
-              <text x="160" y="262" textAnchor="middle" fontFamily="Fraunces,Georgia,serif" fontSize="17" fill="#3a6b1a">Brightening Face Oil</text>
-              <rect x="112" y="298" width="96" height="24" rx="12" fill="#1e4010"/>
-              <text x="160" y="313" textAnchor="middle" fontFamily="Inter,sans-serif" fontSize="10" fill="#e8dcc4" fontWeight="600" letterSpacing="1.2">PURE SAFFRON</text>
+            <span className="hero-tag">✦ Pure Ayurvedic · This season</span>
+            <svg viewBox="0 0 220 380" width="220" height="380" xmlns="http://www.w3.org/2000/svg" className="hero-bottle">
+              <defs>
+                <linearGradient id="bottleG" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stopColor="#e8dcc4" stopOpacity="0.95"/>
+                  <stop offset="50%" stopColor="#c8a870" stopOpacity="0.9"/>
+                  <stop offset="100%" stopColor="#8a6030" stopOpacity="0.95"/>
+                </linearGradient>
+                <linearGradient id="capG2" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#1e4010"/>
+                  <stop offset="100%" stopColor="#0e2008"/>
+                </linearGradient>
+                <linearGradient id="labelG2" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#faf8f2"/>
+                  <stop offset="100%" stopColor="#f0e8d8"/>
+                </linearGradient>
+              </defs>
+              <rect x="78" y="10" width="64" height="58" rx="8" fill="url(#capG2)"/>
+              <rect x="84" y="14" width="52" height="6" rx="3" fill="#2d5a1b" opacity="0.5"/>
+              <rect x="92" y="68" width="36" height="14" fill="#4a2c10"/>
+              <path d="M60 84 Q60 80 70 80 L150 80 Q160 80 160 84 L160 350 Q160 368 110 368 Q60 368 60 350 Z" fill="url(#bottleG)" stroke="#4a3010" strokeWidth="0.5"/>
+              <path d="M72 96 Q66 200 76 320" stroke="rgba(255,255,255,0.45)" strokeWidth="6" fill="none" strokeLinecap="round"/>
+              <rect x="74" y="148" width="72" height="152" rx="4" fill="url(#labelG2)"/>
+              <line x1="82" y1="168" x2="138" y2="168" stroke="#2c3e1a" strokeWidth="0.6"/>
+              <text x="110" y="196" textAnchor="middle" fontFamily="Fraunces, Georgia, serif" fontSize="13" fontStyle="italic" fill="#1a2810" fontWeight="500">Vaidhacharya</text>
+              <line x1="82" y1="210" x2="138" y2="210" stroke="#2c3e1a" strokeWidth="0.4"/>
+              <text x="110" y="232" textAnchor="middle" fontFamily="Inter, sans-serif" fontSize="6.5" letterSpacing="2" fill="#6b7260">N° 01 — KUMKUMADI</text>
+              <text x="110" y="258" textAnchor="middle" fontFamily="Fraunces, Georgia, serif" fontSize="10" fill="#3a6b1a">Brightening</text>
+              <text x="110" y="272" textAnchor="middle" fontFamily="Fraunces, Georgia, serif" fontSize="10" fill="#3a6b1a">Face Oil</text>
+              <line x1="82" y1="286" x2="138" y2="286" stroke="#2c3e1a" strokeWidth="0.4"/>
+              <text x="110" y="298" textAnchor="middle" fontFamily="Inter, sans-serif" fontSize="5.5" letterSpacing="1.5" fill="#6b7260">30 ML / PURE AYURVEDIC</text>
             </svg>
+            <div className="hero-floating">
+              <div className="hero-floating-stars">★★★★★</div>
+              <div className="hero-floating-text">
+                <strong>"Transformed my skin in 21 days."</strong><br />
+                Vogue India · Editor's Pick
+              </div>
+            </div>
           </div>
         </div>
       </section>

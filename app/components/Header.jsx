@@ -12,23 +12,37 @@ const NAV_LINKS = [
   {label: 'About', to: '/pages/about'},
 ];
 
-function AnnouncementBar() {
-  const messages = [
-    '✦ Free shipping on orders above ₹499',
-    '✦ PETA Certified Vegan · Clinically Tested',
-    '✦ Use code AYURVEDA10 for 10% off your first order',
-    '✦ 5000 years of Ayurvedic wisdom, clinically proven',
-  ];
-  const [idx, setIdx] = useState(0);
+function getCountdown() {
+  const target = new Date();
+  target.setHours(23, 59, 59, 0);
+  const diff = Math.max(0, target - new Date());
+  const h = String(Math.floor(diff / 3.6e6)).padStart(2, '0');
+  const m = String(Math.floor((diff / 6e4) % 60)).padStart(2, '0');
+  const s = String(Math.floor((diff / 1e3) % 60)).padStart(2, '0');
+  return `${h}:${m}:${s}`;
+}
 
+function AnnouncementBar() {
+  const [time, setTime] = useState(getCountdown());
   useEffect(() => {
-    const t = setInterval(() => setIdx((i) => (i + 1) % messages.length), 3500);
-    return () => clearInterval(t);
+    const id = setInterval(() => setTime(getCountdown()), 1000);
+    return () => clearInterval(id);
   }, []);
 
   return (
     <div className="announce">
-      <p className="announce-text">{messages[idx]}</p>
+      <div className="announce-inner container">
+        <span className="announce-pill">
+          <span className="announce-dot" />
+          Free delivery above ₹699
+        </span>
+        <span className="announce-msg">
+          100% Ayurvedic · Clinically Tested · No Harmful Chemicals
+        </span>
+        <span className="announce-msg">
+          Offer ends in <span className="timer">{time}</span>
+        </span>
+      </div>
     </div>
   );
 }
@@ -78,6 +92,11 @@ export function Header() {
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                 <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
                 <circle cx="12" cy="7" r="4" />
+              </svg>
+            </Link>
+            <Link to="/account/wishlist" className="navbar-icon" aria-label="Wishlist">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
               </svg>
             </Link>
             <Link to="/cart" className="navbar-icon navbar-cart" aria-label="Cart">
