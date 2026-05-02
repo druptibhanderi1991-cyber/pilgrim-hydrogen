@@ -1,0 +1,107 @@
+
+> hydrogen-storefront@2026.4.0 dev
+> shopify hydrogen dev --codegen
+
+Port 3000 is in use, trying another one...
+Port 3001 is in use, trying another one...
+
+Environment variables injected into MiniOxygen:
+
+SESSION_SECRET                  from local .env
+PUBLIC_STORE_DOMAIN             from local .env
+PUBLIC_STOREFRONT_API_TOKEN     from local .env
+PUBLIC_STOREFRONT_API_VERSION   from local .env
+
+  [32m➜[39m  [1mLocal[22m:   [36mhttp://localhost:[1m3002[22m/[39m
+[2m  [32m➜[39m  [1mNetwork[22m[2m: use [22m[1m--host[22m[2m to expose[22m
+
+
+╭─ success ────────────────────────────────────────────────────────────────────╮
+│                                                                              │
+│  View Hydrogen app: http://localhost:3002/                                   │
+│                                                                              │
+│  View GraphiQL API browser:                                                  │
+│  http://localhost:3002/graphiql                                              │
+│                                                                              │
+│  View server network requests:                                               │
+│  http://localhost:3002/subrequest-profiler                                   │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+╭─ info ───────────────────────────────────────────────────────────────────────╮
+│                                                                              │
+│  There's a new @shopify/hydrogen version available.                          │
+│                                                                              │
+│  Current: 2026.4.0 | Latest: 2026.4.1                                        │
+│                                                                              │
+│  The next 1 version(s) include                                               │
+│    • 2026.4.1 - Cart compatibility fixes and @shopify/remix-oxygen           │
+│      deprecation                                                             │
+│                                                                              │
+│  Next steps                                                                  │
+│    • Run `npx shopify hydrogen upgrade` or `npx shopify hydrogen upgrade     │
+│      --version 2026.4.1`                                                     │
+│    • Read release notes at https://hydrogen.shopify.dev/releases             │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+╭─ error ──────────────────────────────────────────────────────────────────────╮
+│                                                                              │
+│  MiniOxygen encountered an error while running your app's entry point:       │
+│                                                                              │
+│  Error: Network connection lost.                                             │
+│                                                                              │
+│  To investigate the issue, examine this stack trace:                         │
+│    at (.vite/deps_ssr/react-dom_server.js:1)                                 │
+│    at (app/entry.server.jsx:3)                                               │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+╭─ error ──────────────────────────────────────────────────────────────────────╮
+│                                                                              │
+│  MiniOxygen encountered an error while running your app's entry point:       │
+│                                                                              │
+│  Error: Network connection lost.                                             │
+│                                                                              │
+│  To investigate the issue, examine this stack trace:                         │
+│    at (.vite/deps_ssr/react-dom_server.js:1)                                 │
+│    at (app/entry.server.jsx:3)                                               │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+╭─ error ──────────────────────────────────────────────────────────────────────╮
+│                                                                              │
+│  MiniOxygen encountered an error while running your app's entry point:       │
+│                                                                              │
+│  Error: Network connection lost.                                             │
+│                                                                              │
+│  To investigate the issue, examine this stack trace:                         │
+│    at (.vite/deps_ssr/react-dom_server.js:1)                                 │
+│    at (app/entry.server.jsx:3)                                               │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+╭─ error ──────────────────────────────────────────────────────────────────────╮
+│                                                                              │
+│  MiniOxygen encountered an error while running your app's entry point:       │
+│                                                                              │
+│  Error: Network connection lost.                                             │
+│                                                                              │
+│  To investigate the issue, examine this stack trace:                         │
+│    at (.vite/deps_ssr/react-dom_server.js:1)                                 │
+│    at (app/entry.server.jsx:3)                                               │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+╭─ error ──────────────────────────────────────────────────────────────────────╮
+│                                                                              │
+│  MiniOxygen encountered an error while running your app's entry point:       │
+│                                                                              │
+│  Error: Network connection lost.                                             │
+│                                                                              │
+│  To investigate the issue, examine this stack trace:                         │
+│    at (.vite/deps_ssr/react-dom_server.js:1)                                 │
+│    at (app/entry.server.jsx:3)                                               │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+

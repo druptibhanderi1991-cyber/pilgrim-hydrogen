@@ -2,57 +2,12 @@ import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useLoaderData } from 'react-router';
 import { Star, ShoppingCart, Sparkles, Droplets, ShieldCheck, Smile, Wind, Feather, Lock, Truck } from 'lucide-react';
-import { useCart } from '~/context/CartContext';
+import { useCart } from '~/components/CartProvider';
 import { useAside } from '~/components/Aside';
+import { Image } from '@shopify/hydrogen';
 import '../styles/ProductDetail.css';
 
-const productData = {
-  id: '1',
-  name: '10% Vitamin C Face Serum For Triple Glow+++',
-  subtitle: 'Discover Glowing, Brighter Skin',
-  price: 645,
-  originalPrice: 695,
-  rating: 4.8,
-  reviews: 5476,
-  size: '30ml',
-  badge: 'NEW & IMPROVED FORMULA',
-  circleBadge: 'NEW',
-  rankText: '#1 IN SKINCARE',
-  image: '/gold_serum.png',
-  images: ['/gold_serum.png', '/after_skin.png', '/before_skin.png'],
-  description: 'Achieve glowing, brighter skin in just 5 days* with the advanced 2.0 formula, now enriched with 10% Vitamin C (3-O-Ethyl Ascorbic Acid) and 5% Niacinamide for even faster, more effective results.',
-  benefits: ['Brightens Skin', 'Fades Dark Spots', 'Evens Skin Tone']
-};
 
-const reviewsMockData = [
-  {
-    id: 1,
-    name: "Aarti Sharma",
-    verified: true,
-    rating: 5,
-    date: "2 days ago",
-    text: "Absolutely love this serum! It has completely changed my skincare game. The dark spots on my cheeks are visibly lighter.",
-    images: ["/after_skin.png", "/before_skin.png"]
-  },
-  {
-    id: 2,
-    name: "Pooja Reddy",
-    verified: true,
-    rating: 4,
-    date: "1 week ago",
-    text: "Very gentle and nice texture. Absorbs quickly. Waiting to see more results on pigmentation but overall a great product.",
-    images: []
-  },
-  {
-    id: 3,
-    name: "Neha K.",
-    verified: true,
-    rating: 5,
-    date: "2 weeks ago",
-    text: "The best vitamin c serum I have used. So lightweight and doesn't feel sticky at all.",
-    images: ["/after_skin.png"]
-  }
-];
 
 export async function loader({ params, context }) {
   const { id } = params;
@@ -136,12 +91,14 @@ const ProductDetail = () => {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   
-  const { cartItems, addToCart, updateQuantity } = useCart();
+  const { product } = useLoaderData();
+  const [selectedVariant, setSelectedVariant] = useState(product.variants[0] || {});
+  
+  const { cart, addToCart, updateCartLine } = useCart();
   const { open } = useAside();
   
-  const { product } = useLoaderData();
-  const reviewsMockData = []; // Removed mock reviews
-  const cartItem = cartItems.find(item => item.baseProductId === product.id || item.id === product.id);
+  const cartItems = cart?.items || [];
+  const cartItem = cartItems.find(item => item.variantId === selectedVariant.id || item.baseProductId === product.id);
   const currentQuantity = cartItem ? cartItem.quantity : 0;
 
   const [pincode, setPincode] = useState('');
@@ -269,18 +226,24 @@ const ProductDetail = () => {
           </div>
 
           <div className="pdp-price-section">
-            <span className="pdp-current-price">₹{product.price}</span>
+            <span className="pdp-current-price">₹{selectedVariant.price}</span>
           </div>
-          <p className="inclusive-taxes">MRP Inclusive of all taxes<br/>30 ml | 1.01 fl. oz.</p>
+          <p className="inclusive-taxes">MRP Inclusive of all taxes</p>
 
           <div className="pdp-size-selector">
-            <h4>Size: <span>{product.size}</span></h4>
-            <div className="size-options-new">
-              <div className="size-card active">
-                <img src={product.image} alt="30ml variant" />
-                <span className="size-card-vol">Size:{product.size}</span>
-                <span className="size-card-price">₹{product.price}</span>
-              </div>
+            <h4>Size: <span>{selectedVariant.size}</span></h4>
+            <div className="size-options-new" style={{ display: 'flex', gap: '10px' }}>
+              {product.variants.map((variant) => (
+                <div 
+                  key={variant.id}
+                  className={`size-card ${selectedVariant.id === variant.id ? 'active' : ''}`}
+                  onClick={() => setSelectedVariant(variant)}
+                  style={{ cursor: 'pointer', border: selectedVariant.id === variant.id ? '2px solid #000' : '1px solid #ddd', padding: '10px', borderRadius: '8px' }}
+                >
+                  <span className="size-card-vol">{variant.size}</span>
+                  <span className="size-card-price" style={{ display: 'block', fontWeight: 'bold' }}>₹{variant.price}</span>
+                </div>
+              ))}
             </div>
           </div>
 

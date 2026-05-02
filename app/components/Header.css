@@ -27,10 +27,17 @@
   justify-content: space-between;
 }
 
-.logo h2 {
-  font-size: 1.5rem;
-  font-weight: 700;
-  letter-spacing: 1px;
+.header-logo {
+  height: 38px;
+  width: auto;
+  display: block;
+  filter: grayscale(100%) contrast(200%);
+  mix-blend-mode: multiply;
+  transition: opacity 0.3s ease;
+}
+
+.header-logo:hover {
+  opacity: 0.7;
 }
 
 .desktop-nav ul {

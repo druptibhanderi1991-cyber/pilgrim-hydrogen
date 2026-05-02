@@ -1,0 +1,65 @@
+
+> hydrogen-storefront@2026.4.0 build
+> shopify hydrogen build --codegen
+
+[36mvite v6.4.2 [32mbuilding for production...[36m[39m
+transforming...
+[32m✓[39m 1 modules transformed.
+[31m✗[39m Build failed in 84ms
+╭─ error ──────────────────────────────────────────────────────────────────────╮
+│                                                                              │
+│  [vite:esbuild] Transform failed with 1 error:                               │
+│  C:/Users/Dhaval/.gemini/antigravity/scratch/pilgrim-clone/hydrogen-storefr  │
+│  ont/app/routes/_index.jsx?__react-router-build-client-route:49:0: ERROR:    │
+│  Unexpected "export"                                                         │
+│  file: C:/Users/Dhaval/.gemini/antigravity/scratch/pilgrim-clone/hydrogen-s  │
+│  torefront/app/routes/_index.jsx?__react-router-build-client-route:49:0      │
+│                                                                              │
+│  Unexpected "export"                                                         │
+│  47 |                                                                        │
+│  48 |  export async function loader({ context }) {                           │
+│  49 |  export async function loader({ context }) {                           │
+│     |  ^                                                                     │
+│  50 |    const { storefront } = context;                                     │
+│  51 |    try {                                                               │
+│                                                                              │
+│                                                                              │
+│  To investigate the issue, examine this stack trace:                         │
+│    at (app/routes/_index.jsx?__react-router-build-client-route:49)           │
+│    at (Users/Dhaval/.gemini/antigravity/scratch/pilgrim-clone/hydrogen-stor  │
+│    efront/app/routes/_index.jsx?__react-router-build-client-route:49)        │
+│    at failureErrorWithLog (vite/node_modules/esbuild/lib/main.js:1467)       │
+│    at (vite/node_modules/esbuild/lib/main.js:736)                            │
+│    at <computed> (vite/node_modules/esbuild/lib/main.js:603)                 │
+│    at handleIncomingPacket (vite/node_modules/esbuild/lib/main.js:658)       │
+│    at readFromStdout (vite/node_modules/esbuild/lib/main.js:581)             │
+│    at emit (node:events:508)                                                 │
+│    at emit (node:domain:489)                                                 │
+│    at addChunk (node:internal/streams/readable:559)                          │
+│    at readableAddChunkPushByteMode (node:internal/streams/readable:510)      │
+│    at push (node:internal/streams/readable:390)                              │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+[31m[vite:esbuild] Transform failed with 1 error:
+C:/Users/Dhaval/.gemini/antigravity/scratch/pilgrim-clone/hydrogen-storefront/app/routes/_index.jsx?__react-router-build-client-route:49:0: ERROR: Unexpected "export"[39m
+file: [36mC:/Users/Dhaval/.gemini/antigravity/scratch/pilgrim-clone/hydrogen-storefront/app/routes/_index.jsx?__react-router-build-client-route:49:0[39m
+[33m
+[33mUnexpected "export"[33m
+47 |  
+48 |  export async function loader({ context }) {
+49 |  export async function loader({ context }) {
+   |  ^
+50 |    const { storefront } = context;
+51 |    try {
+[39m
+    at failureErrorWithLog (C:\Users\Dhaval\.gemini\antigravity\scratch\pilgrim-clone\hydrogen-storefront\node_modules\vite\node_modules\esbuild\lib\main.js:1467:15)
+    at C:\Users\Dhaval\.gemini\antigravity\scratch\pilgrim-clone\hydrogen-storefront\node_modules\vite\node_modules\esbuild\lib\main.js:736:50
+    at responseCallbacks.<computed> (C:\Users\Dhaval\.gemini\antigravity\scratch\pilgrim-clone\hydrogen-storefront\node_modules\vite\node_modules\esbuild\lib\main.js:603:9)
+    at handleIncomingPacket (C:\Users\Dhaval\.gemini\antigravity\scratch\pilgrim-clone\hydrogen-storefront\node_modules\vite\node_modules\esbuild\lib\main.js:658:12)
+    at Socket.readFromStdout (C:\Users\Dhaval\.gemini\antigravity\scratch\pilgrim-clone\hydrogen-storefront\node_modules\vite\node_modules\esbuild\lib\main.js:581:7)
+    at Socket.emit (node:events:508:28)
+    at Socket.emit (node:domain:489:12)
+    at addChunk (node:internal/streams/readable:559:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:510:3)
+    at Socket.Readable.push (node:internal/streams/readable:390:5)

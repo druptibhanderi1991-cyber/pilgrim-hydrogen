@@ -11,10 +11,13 @@
   margin-bottom: 40px;
 }
 
-.footer-col h3 {
-  font-size: 1.5rem;
+.footer-logo {
+  height: 45px;
+  width: auto;
   margin-bottom: 15px;
-  color: var(--primary-charcoal);
+  display: block;
+  filter: grayscale(100%) contrast(200%);
+  mix-blend-mode: multiply;
 }
 
 .footer-col h4 {

@@ -4,15 +4,24 @@
   gap: 60px;
 }
 
-/* Hero Section */
 .hero-section {
+  width: 100%;
   background-color: var(--primary-charcoal);
-  color: var(--bg-white);
-  padding: 100px 0;
-  text-align: center;
-  background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('/hero_banner.png');
-  background-size: cover;
-  background-position: center;
+  display: block;
+}
+
+.hero-banner-image {
+  width: 100%;
+  aspect-ratio: 2.4 / 1;
+  max-height: 550px;
+  display: block;
+  object-fit: cover;
+  object-position: center;
+  transition: opacity 0.3s ease;
+}
+
+.hero-banner-image:hover {
+  opacity: 0.95;
 }
 
 .hero-content {
@@ -185,9 +194,23 @@
 
 .products-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 30px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 32px;
   width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+@media (max-width: 1024px) {
+  .products-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .products-grid {
+    grid-template-columns: repeat(1, 1fr);
+  }
 }
 
 /* Brand Values */

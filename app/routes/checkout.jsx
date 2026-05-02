@@ -1,13 +1,21 @@
-import React, { useState } from 'react';
-import { useCart } from '~/context/CartContext';
+import React, { useState, useEffect } from 'react';
+import { getCart } from '~/lib/shopify';
 import { Link } from 'react-router-dom';
 import '../styles/checkout.css';
 
 export default function Checkout() {
-  const { cartItems, cartTotal } = useCart();
+  const [cartItems, setCartItems] = useState([]);
+  const [cartTotal, setCartTotal] = useState(0);
   const [pincode, setPincode] = useState('');
   const [shippingMethod, setShippingMethod] = useState(null);
   
+  useEffect(() => {
+    getCart().then(cart => {
+      setCartItems(cart?.items || []);
+      setCartTotal(cart?.cost?.totalAmount?.amount || 0);
+    });
+  }, []);
+
   const handlePincodeChange = (e) => {
     const val = e.target.value;
     setPincode(val);
