@@ -1,38 +1,58 @@
-import {Suspense} from 'react';
-import {useAside} from '~/components/Aside';
-
 export function CartSummary({cart, layout}) {
-  const className =
-    layout === 'page' ? 'cart-summary-page' : 'cart-summary-aside';
+  const subtotal = cart?.cost?.totalAmount?.amount
+    ? parseFloat(cart.cost.totalAmount.amount).toFixed(0)
+    : (cart?.items || []).reduce((s, l) => s + (parseFloat(l.price) || 0) * l.quantity, 0).toFixed(0);
+
+  const freeShippingThreshold = 699;
+  const remaining = Math.max(0, freeShippingThreshold - parseFloat(subtotal));
+  const pct = Math.min(100, (parseFloat(subtotal) / freeShippingThreshold) * 100);
 
   return (
-    <div aria-labelledby="cart-summary" className={className}>
-      <h4 style={{ margin: '1rem 0 0.5rem' }}>Totals</h4>
-      <dl className="cart-subtotal">
-        <dt>Subtotal</dt>
-        <dd style={{ marginLeft: 'auto' }}>
-          ₹{cart.subtotal || 0}
-        </dd>
-      </dl>
-      <p className="small" style={{ opacity: 0.7, margin: '0.5rem 0' }}>
-        Taxes and shipping calculated at checkout
-      </p>
-      
-      <div style={{ marginTop: '1rem' }}>
-        <CartCheckoutActions checkoutUrl={cart.checkoutUrl} />
+    <div className="drawer-summary">
+      {/* Free shipping progress */}
+      <div className="ds-shipping">
+        <div className="ds-shipping-bar">
+          <div className="ds-shipping-fill" style={{width: `${pct}%`}} />
+        </div>
+        {remaining > 0 ? (
+          <p className="ds-shipping-txt">
+            Add <strong>₹{remaining.toFixed(0)}</strong> more for free delivery
+          </p>
+        ) : (
+          <p className="ds-shipping-txt ds-shipping-done">
+            🎉 You qualify for free delivery!
+          </p>
+        )}
+      </div>
+
+      {/* Trust badges */}
+      <div className="ds-trust">
+        {['100% Authentic', 'Free Returns', 'Secure Pay'].map((b) => (
+          <span key={b} className="ds-trust-badge">{b}</span>
+        ))}
+      </div>
+
+      {/* Subtotal row */}
+      <div className="ds-total-row">
+        <span>Subtotal</span>
+        <strong>₹{subtotal}</strong>
+      </div>
+      <p className="ds-tax-note">Taxes & shipping calculated at checkout</p>
+
+      {/* Checkout CTA */}
+      {cart?.checkoutUrl && (
+        <a href={cart.checkoutUrl} className="ds-checkout-btn">
+          Proceed to Checkout →
+        </a>
+      )}
+
+      {/* Continue shopping */}
+      <div className="ds-continue">
+        or{' '}
+        <a href="/collections/all" className="ds-continue-link">
+          continue shopping
+        </a>
       </div>
     </div>
-  );
-}
-
-function CartCheckoutActions({checkoutUrl}) {
-  if (!checkoutUrl) return null;
-
-  return (
-    <a href={checkoutUrl} target="_self">
-      <button style={{ width: '100%', padding: '15px', background: '#000', color: '#fff', borderRadius: '8px', fontWeight: 'bold', border: 'none', cursor: 'pointer' }}>
-        Continue to Checkout
-      </button>
-    </a>
   );
 }

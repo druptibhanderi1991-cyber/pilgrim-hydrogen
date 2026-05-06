@@ -1,6 +1,10 @@
+import {useState} from 'react';
 import {useLoaderData, Link} from 'react-router';
 import {Money} from '@shopify/hydrogen';
 import CategoryCard from '~/components/CategoryCard';
+import {useCart} from '~/components/CartProvider';
+import {useAside} from '~/components/Aside';
+import {useQuickAdd} from '~/components/QuickAddContext';
 
 const HOME_QUERY = `#graphql
   query HomePageData {
@@ -26,6 +30,13 @@ const HOME_QUERY = `#graphql
         compareAtPriceRange { minVariantPrice { amount currencyCode } }
         featuredImage { url altText }
         tags
+        variants(first: 3) {
+          nodes {
+            id title availableForSale
+            price { amount currencyCode }
+            compareAtPrice { amount currencyCode }
+          }
+        }
       }
     }
     newProducts: products(first: 4, sortKey: CREATED_AT, reverse: true) {
@@ -87,6 +98,214 @@ function MarqueeBar() {
         ))}
       </div>
     </div>
+  );
+}
+
+const TRENDING_TABS = [
+  {id: 'bestsellers', label: 'Bestsellers', match: () => true},
+  {id: 'skin',        label: 'Skin Care',   match: (p) => p.tags?.some((t) => /skin|face/i.test(t))},
+  {id: 'hair',        label: 'Hair Care',   match: (p) => p.tags?.some((t) => /hair/i.test(t))},
+  {id: 'wellness',    label: 'Wellness',    match: (p) => p.tags?.some((t) => /wellness|herb|tea|capsule/i.test(t))},
+];
+
+// Deterministic 4–5 digit "review count" derived from product id so cards stay
+// stable between renders and don't look identical across products.
+function reviewCount(id = '') {
+  let h = 0;
+  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
+  return 280 + (h % 7800);
+}
+
+function pickStatusLabel(tags = []) {
+  const lower = tags.map((t) => t.toLowerCase());
+  if (lower.includes('viral'))     return {text: '#1 BESTSELLER',      tone: 'moss'};
+  if (lower.includes('bestseller'))return {text: 'CUSTOMER FAVOURITE', tone: 'moss'};
+  if (lower.includes('new'))       return {text: 'NEW LAUNCH',         tone: 'terracotta'};
+  return {text: 'AYURVEDIC PICK', tone: 'moss'};
+}
+
+// Circular stamp text per product — rotates so each card looks distinct
+// (Pilgrim hand-paints these into product photos; we layer them in CSS).
+const STAMP_VARIANTS = [
+  {top: 'CLINICALLY', mid: 'TESTED', bot: 'AYURVEDIC FORMULA'},
+  {top: '100%',       mid: 'NATURAL', bot: 'NO PARABENS'},
+  {top: 'AGE-OLD',    mid: 'RITUAL',  bot: '5000 YR HERITAGE'},
+  {top: 'FARM',       mid: 'TO BOTTLE', bot: 'PURE & TRACED'},
+];
+function pickStamp(id = '') {
+  let h = 0;
+  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
+  return STAMP_VARIANTS[h % STAMP_VARIANTS.length];
+}
+
+function TrendingCard({product}) {
+  const {addToCart, addingVariants, cart, updateCartLine} = useCart();
+  const {open} = useAside();
+  const {setProduct: setQuickAddProduct} = useQuickAdd();
+
+  const status    = pickStatusLabel(product.tags);
+  const isViral   = product.tags?.some((t) => /viral|bestseller/i.test(t));
+  const isNew     = product.tags?.some((t) => /new/i.test(t));
+  const reviews   = reviewCount(product.id);
+  const stamp     = pickStamp(product.id);
+
+  const variants         = product.variants?.nodes || [];
+  const firstVariant     = variants[0];
+  const hasMultiVariants = variants.length > 1;
+
+  const cartItem = cart?.items?.find((item) => item.id === firstVariant?.id);
+  const cartQty  = cartItem?.quantity || 0;
+  const lineId   = cartItem?.lineId;
+  const adding   = addingVariants.has(firstVariant?.id);
+
+  // Single-variant: add → open cart drawer immediately (homepage UX)
+  function handleDirectATC(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!firstVariant?.id || adding) return;
+    addToCart(firstVariant.id, 1).then(() => {
+      open('cart');
+    });
+  }
+
+  // Multi-variant: open Quick Add panel
+  function handleChooseOptions(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    setQuickAddProduct(product);
+    open('options');
+  }
+
+  return (
+    <div className="tr-card">
+      <Link to={`/products/${product.handle}`} className="tr-card-link" aria-label={product.title}>
+        <div className="tr-card-img">
+          {/* Top-left ribbon (B1G1FREE in Pilgrim) */}
+          <span className="tr-ribbon-l">B1G1FREE</span>
+
+          {/* Circular stamp top-right (CLINICALLY TESTED in Pilgrim) */}
+          <span className="tr-stamp">
+            <span className="tr-stamp-inner">
+              <span className="tr-stamp-top">{stamp.top}</span>
+              <span className="tr-stamp-mid">{stamp.mid}</span>
+              <span className="tr-stamp-bot">{stamp.bot}</span>
+            </span>
+          </span>
+
+          {/* Yellow "NEW & IMPROVED" diagonal callout */}
+          {isNew && (
+            <span className="tr-callout">
+              <span className="tr-callout-top">NEW</span>
+              <span className="tr-callout-bot">&amp; IMPROVED</span>
+            </span>
+          )}
+
+          {/* Vertical "VIRAL · BEST SELLER" red ribbon */}
+          {isViral && (
+            <span className="tr-ribbon-r">
+              <span className="tr-ribbon-r-top">VIRAL</span>
+              <span className="tr-ribbon-r-bot">BEST SELLER</span>
+            </span>
+          )}
+
+          {product.featuredImage?.url ? (
+            <img
+              src={product.featuredImage.url}
+              alt={product.featuredImage.altText || product.title}
+              loading="lazy"
+            />
+          ) : (
+            <div className="tr-card-img-fallback">✦</div>
+          )}
+        </div>
+
+        <div className="tr-card-body">
+          <p className={`tr-status tr-status-${status.tone}`}>{status.text}</p>
+          <h3 className="tr-name">{product.title}</h3>
+          <p className="tr-desc">Time-tested Ayurvedic formula</p>
+          <div className="tr-rating">
+            <span className="tr-stars" aria-label="5 out of 5 stars">★ ★ ★ ★ ★</span>
+            <span className="tr-reviews">{reviews.toLocaleString('en-IN')} reviews</span>
+          </div>
+          <div className="tr-meta">1 Size</div>
+          <div className="tr-price">
+            From&nbsp;<Money data={product.priceRange.minVariantPrice} />
+          </div>
+        </div>
+      </Link>
+
+      {/* Multi-variant → Choose Options */}
+      {hasMultiVariants && (
+        <button className="tr-cta tr-cta-options" onClick={handleChooseOptions} type="button">
+          Choose Options <span aria-hidden="true">→</span>
+        </button>
+      )}
+
+      {/* Single-variant in cart → inline stepper */}
+      {!hasMultiVariants && cartQty > 0 && (
+        <div className="tr-stepper">
+          <button type="button" className="tr-stepper-btn"
+            onClick={(e) => { e.preventDefault(); updateCartLine(lineId, cartQty - 1); }}>−</button>
+          <span className="tr-stepper-qty">{cartQty}</span>
+          <button type="button" className="tr-stepper-btn"
+            onClick={(e) => { e.preventDefault(); updateCartLine(lineId, cartQty + 1); }}>+</button>
+        </div>
+      )}
+
+      {/* Single-variant not in cart → ATC opens drawer */}
+      {!hasMultiVariants && cartQty === 0 && (
+        <button
+          className={`tr-cta ${adding ? 'tr-cta-loading' : ''}`}
+          onClick={handleDirectATC}
+          disabled={adding || !firstVariant?.availableForSale}
+          type="button"
+        >
+          {!firstVariant?.availableForSale
+            ? 'Sold Out'
+            : adding
+            ? 'Adding…'
+            : <>Add to cart <span aria-hidden="true">→</span></>}
+        </button>
+      )}
+    </div>
+  );
+}
+
+function TrendingSection({products = []}) {
+  const [activeTab, setActiveTab] = useState('bestsellers');
+  const tab = TRENDING_TABS.find((t) => t.id === activeTab) || TRENDING_TABS[0];
+  const filtered = products.filter(tab.match);
+  const visible = (filtered.length > 0 ? filtered : products).slice(0, 4);
+
+  return (
+    <section className="tr-section">
+      <div className="tr-container">
+        <div className="tr-head">
+          <h2 className="tr-title">Trending Now</h2>
+          <p className="tr-subtitle">Curated just for you!</p>
+          <div className="tr-tabs" role="tablist">
+            {TRENDING_TABS.map((t) => (
+              <button
+                key={t.id}
+                role="tab"
+                aria-selected={t.id === activeTab}
+                className={`tr-tab${t.id === activeTab ? ' is-active' : ''}`}
+                onClick={() => setActiveTab(t.id)}
+                type="button"
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="tr-grid">
+          {visible.map((p) => (
+            <TrendingCard key={p.id} product={p} />
+          ))}
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -214,51 +433,7 @@ export default function Homepage() {
         </section>
       )}
 
-      {/* ── Trending Now — premium minimal Ayurvedic ritual showcase ── */}
-      <section className="trending">
-        <div className="trending-container">
-          <div className="trending-head">
-            <div>
-              <p className="trending-eyebrow">BEST SELLING RITUALS</p>
-              <h2 className="trending-title">
-                Trending <em>formulas</em>
-              </h2>
-              <p className="trending-sub">
-                Time-tested Ayurvedic formulas, backed by modern clinical research.
-              </p>
-            </div>
-            <Link to="/collections/all" className="trending-shopall">
-              Shop all →
-            </Link>
-          </div>
-
-          <div className="trending-grid">
-            {allProducts.slice(0, 4).map((p) => (
-              <Link key={p.id} to={`/products/${p.handle}`} className="trending-card">
-                <div className="trending-img-wrap">
-                  <span className="trending-badge">AYURVEDIC</span>
-                  {p.featuredImage?.url ? (
-                    <img
-                      src={p.featuredImage.url}
-                      alt={p.featuredImage.altText || p.title}
-                      className="trending-img"
-                      loading="lazy"
-                    />
-                  ) : (
-                    <div className="trending-img-fallback">✦</div>
-                  )}
-                </div>
-                <div className="trending-info">
-                  <h3 className="trending-name">{p.title}</h3>
-                  <div className="trending-price">
-                    <Money data={p.priceRange.minVariantPrice} />
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
+      <TrendingSection products={allProducts} />
 
       {/* ── Editorial Promo ── */}
       <section className="editorial container">

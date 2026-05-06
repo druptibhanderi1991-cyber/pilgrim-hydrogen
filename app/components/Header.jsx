@@ -1,6 +1,7 @@
 import {useState, useEffect} from 'react';
 import {Link, useLocation} from 'react-router';
 import {useCart} from '~/components/CartProvider';
+import {useAside} from '~/components/Aside';
 
 const NAV_LINKS = [
   {label: 'Bestsellers', to: '/collections/all'},
@@ -50,6 +51,7 @@ function AnnouncementBar() {
 
 export function Header() {
   const {cart} = useCart();
+  const {open} = useAside();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
@@ -100,14 +102,19 @@ export function Header() {
                 <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
               </svg>
             </Link>
-            <Link to="/cart" className="navbar-icon navbar-cart" aria-label="Cart">
+            <button
+              type="button"
+              className="navbar-icon navbar-cart"
+              aria-label="Cart"
+              onClick={() => open('cart')}
+            >
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                 <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" />
                 <line x1="3" y1="6" x2="21" y2="6" />
                 <path d="M16 10a4 4 0 01-8 0" />
               </svg>
               {cartCount > 0 && <span className="cart-badge">{cartCount}</span>}
-            </Link>
+            </button>
             <button
               className="navbar-hamburger"
               onClick={() => setMobileOpen((v) => !v)}

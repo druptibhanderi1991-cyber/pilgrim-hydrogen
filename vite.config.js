@@ -29,5 +29,6 @@ export default defineConfig({
   },
   server: {
     allowedHosts: ['.tryhydrogen.dev'],
+    port: 3000,
   },
 });

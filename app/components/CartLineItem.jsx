@@ -1,69 +1,71 @@
 import {Link} from 'react-router';
 import {useCart} from '~/components/CartProvider';
-import {Image} from '@shopify/hydrogen';
 
-export function CartLineItem({line, layout}) {
-  const { updateCartLine, removeCartLine, isCartLoading } = useCart();
+export function CartLineItem({line, index = 0}) {
+  const {updateCartLine, removeCartLine, pendingLines} = useCart();
 
-  if (!line?.id) return null;
+  if (!line) return null;
+
+  const lineId     = line.lineId || line.id;
+  const isUpdating = pendingLines.has(lineId);
+  const price      = typeof line.price === 'number' ? line.price : parseFloat(line.price || 0);
+  const totalPrice = price * line.quantity;
 
   return (
-    <li key={line.id} className="cart-line">
-      <div className="cart-line-inner">
-        {line.image && (
-          <Image
-            alt={line.title}
-            data={{url: line.image, altText: line.title}}
-            height={100}
-            width={100}
-            loading="lazy"
-          />
-        )}
+    <li
+      className={`dl-item ${isUpdating ? 'dl-item--updating' : ''}`}
+      style={{'--i': index}}
+    >
+      {/* Spinner overlay while this line mutates */}
+      {isUpdating && <div className="dl-spinner-overlay"><span className="dl-spin" /></div>}
 
-        <div>
-          <Link
-            prefetch="intent"
-            to={`/product/${line.baseProductId}`} // Using ID here as handle might not be available
-            onClick={() => {
-              if (layout === 'aside') {
-                window.location.href = `/product/${line.baseProductId}`;
-              }
-            }}
-          >
-            <p><strong>{line.title}</strong></p>
-          </Link>
-          <p className="small" style={{ opacity: 0.7 }}>{line.variantTitle !== 'Default Title' ? line.variantTitle : ''}</p>
-          
-          <div className="cart-line-quantity" style={{ marginTop: '10px', display: 'flex', alignItems: 'center', gap: '15px' }}>
-            <div className="quantity-selector-styled" style={{ opacity: isCartLoading ? 0.5 : 1 }}>
-              <button 
-                disabled={isCartLoading || line.quantity <= 1}
-                onClick={() => updateCartLine(line.id, line.quantity - 1)}
-              >
-                -
-              </button>
-              <span>{line.quantity}</span>
-              <button 
-                disabled={isCartLoading}
-                onClick={() => updateCartLine(line.id, line.quantity + 1)}
-              >
-                +
-              </button>
-            </div>
-            
+      {/* Image */}
+      <div className="dl-img">
+        {line.image
+          ? <img src={line.image} alt={line.name} loading="lazy" />
+          : <div className="dl-img-placeholder">✦</div>
+        }
+      </div>
+
+      {/* Info */}
+      <div className="dl-info">
+        <Link to={`/products/${line.handle}`} className="dl-name">
+          {line.name}
+        </Link>
+        {line.size && <div className="dl-variant">{line.size}</div>}
+
+        <div className="dl-row">
+          {/* Quantity stepper */}
+          <div className="dl-qty">
             <button
-              onClick={() => removeCartLine(line.id)}
-              disabled={isCartLoading}
-              style={{ background: 'none', border: 'none', color: '#d32f2f', cursor: 'pointer', fontSize: '0.9rem', padding: 0 }}
-            >
-              Remove
-            </button>
+              className="dl-qty-btn"
+              disabled={isUpdating || line.quantity <= 1}
+              onClick={() => updateCartLine(lineId, line.quantity - 1)}
+              aria-label="Decrease quantity"
+              type="button"
+            >−</button>
+            <span className="dl-qty-val">{line.quantity}</span>
+            <button
+              className="dl-qty-btn"
+              disabled={isUpdating}
+              onClick={() => updateCartLine(lineId, line.quantity + 1)}
+              aria-label="Increase quantity"
+              type="button"
+            >+</button>
           </div>
+
+          {/* Line total */}
+          <div className="dl-price">₹{totalPrice.toFixed(0)}</div>
         </div>
-        
-        <div style={{ marginLeft: 'auto', textAlign: 'right' }}>
-          <p>₹{line.price}</p>
-        </div>
+
+        <button
+          className="dl-remove"
+          disabled={isUpdating}
+          onClick={() => removeCartLine(lineId)}
+          type="button"
+        >
+          {isUpdating ? 'Removing…' : 'Remove'}
+        </button>
       </div>
     </li>
   );

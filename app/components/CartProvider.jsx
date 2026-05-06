@@ -1,56 +1,116 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { getCart, addToCart as apiAddToCart, updateCartLine as apiUpdateCartLine, removeCartLine as apiRemoveCartLine } from '~/lib/shopify';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+} from 'react';
+import {
+  getCart,
+  addToCart as apiAdd,
+  updateCartLine as apiUpdate,
+  removeCartLine as apiRemove,
+} from '~/lib/shopify';
 
 const CartContext = createContext();
 
-export function CartProvider({ children }) {
+export function CartProvider({children}) {
   const [cart, setCart] = useState(null);
-  const [isCartLoading, setIsCartLoading] = useState(true);
+  const [initialLoading, setInitialLoading] = useState(true);
 
-  const fetchCart = useCallback(async () => {
+  // Per-variant loading — Set of variantIds currently being added
+  const [addingVariants, setAddingVariants] = useState(new Set());
+  // Per-line loading — Set of lineIds currently being updated/removed
+  const [pendingLines, setPendingLines] = useState(new Set());
+
+  // Global success toast
+  const [toast, setToast] = useState({visible: false, message: ''});
+  const toastTimerRef = useRef(null);
+
+  /* ── Initial load ─────────────────────────────────────── */
+  useEffect(() => {
+    getCart()
+      .then((data) => setCart(data))
+      .finally(() => setInitialLoading(false));
+  }, []);
+
+  /* ── Toast helper ─────────────────────────────────────── */
+  function showToast(message = 'Added to your bag') {
+    clearTimeout(toastTimerRef.current);
+    setToast({visible: true, message});
+    toastTimerRef.current = setTimeout(
+      () => setToast({visible: false, message: ''}),
+      2800,
+    );
+  }
+
+  /* ── Add to cart ──────────────────────────────────────── */
+  const addToCart = useCallback(async (variantId, quantity = 1) => {
+    setAddingVariants((prev) => new Set([...prev, variantId]));
     try {
-      const data = await getCart();
-      setCart(data);
-    } catch (error) {
-      console.error('Error fetching cart:', error);
+      const updated = await apiAdd(variantId, quantity);
+      if (updated) setCart(updated);
+      showToast('Added to your bag ✓');
     } finally {
-      setIsCartLoading(false);
+      setAddingVariants((prev) => {
+        const next = new Set(prev);
+        next.delete(variantId);
+        return next;
+      });
     }
   }, []);
 
-  useEffect(() => {
-    fetchCart();
-  }, [fetchCart]);
+  /* ── Update quantity ──────────────────────────────────── */
+  const updateCartLine = useCallback(async (lineId, quantity) => {
+    setPendingLines((prev) => new Set([...prev, lineId]));
+    try {
+      const updated = await apiUpdate(lineId, quantity);
+      if (updated) setCart(updated);
+    } finally {
+      setPendingLines((prev) => {
+        const next = new Set(prev);
+        next.delete(lineId);
+        return next;
+      });
+    }
+  }, []);
 
-  const addToCart = async (variantId, quantity = 1) => {
-    setIsCartLoading(true);
-    await apiAddToCart(variantId, quantity);
-    await fetchCart();
-  };
-
-  const updateCartLine = async (lineId, quantity) => {
-    setIsCartLoading(true);
-    await apiUpdateCartLine(lineId, quantity);
-    await fetchCart();
-  };
-
-  const removeCartLine = async (lineId) => {
-    setIsCartLoading(true);
-    await apiRemoveCartLine(lineId);
-    await fetchCart();
-  };
+  /* ── Remove line ──────────────────────────────────────── */
+  const removeCartLine = useCallback(async (lineId) => {
+    setPendingLines((prev) => new Set([...prev, lineId]));
+    try {
+      const updated = await apiRemove(lineId);
+      if (updated) setCart(updated);
+    } finally {
+      setPendingLines((prev) => {
+        const next = new Set(prev);
+        next.delete(lineId);
+        return next;
+      });
+    }
+  }, []);
 
   return (
-    <CartContext.Provider value={{ cart, isCartLoading, addToCart, updateCartLine, removeCartLine, fetchCart }}>
+    <CartContext.Provider
+      value={{
+        cart,
+        isCartLoading: initialLoading,
+        addingVariants,  // Set<variantId> — disable only the clicked ATC button
+        pendingLines,    // Set<lineId>    — disable only that line's controls
+        toast,
+        addToCart,
+        updateCartLine,
+        removeCartLine,
+      }}
+    >
       {children}
     </CartContext.Provider>
   );
 }
 
 export function useCart() {
-  const context = useContext(CartContext);
-  if (!context) {
-    throw new Error('useCart must be used within a CartProvider');
-  }
-  return context;
+  const ctx = useContext(CartContext);
+  if (!ctx) throw new Error('useCart must be used inside <CartProvider>');
+  return ctx;
 }

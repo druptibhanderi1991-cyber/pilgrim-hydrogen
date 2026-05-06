@@ -4,15 +4,15 @@ import {Aside} from '~/components/Aside';
 import {Footer} from '~/components/Footer';
 import {Header, HeaderMenu} from '~/components/Header';
 import {CartMain} from '~/components/CartMain';
+import {CartToast} from '~/components/CartToast';
+import {QuickAddPanel} from '~/components/QuickAdd';
+import {QuickAddProvider} from '~/components/QuickAddContext';
 import {
   SEARCH_ENDPOINT,
   SearchFormPredictive,
 } from '~/components/SearchFormPredictive';
 import {SearchResultsPredictive} from '~/components/SearchResultsPredictive';
 
-/**
- * @param {PageLayoutProps}
- */
 export function PageLayout({
   cart,
   children = null,
@@ -22,35 +22,44 @@ export function PageLayout({
   publicStoreDomain,
 }) {
   return (
-    <Aside.Provider>
-      <CartAside cart={cart} />
-      <SearchAside />
-      <MobileMenuAside header={header} publicStoreDomain={publicStoreDomain} />
-      {header && (
-        <Header
+    <QuickAddProvider>
+      <Aside.Provider>
+        <CartAside cart={cart} />
+        <QuickAddAside />
+        <SearchAside />
+        <MobileMenuAside header={header} publicStoreDomain={publicStoreDomain} />
+        <CartToast />
+        {header && (
+          <Header
+            header={header}
+            cart={cart}
+            isLoggedIn={isLoggedIn}
+            publicStoreDomain={publicStoreDomain}
+          />
+        )}
+        <main>{children}</main>
+        <Footer
+          footer={footer}
           header={header}
-          cart={cart}
-          isLoggedIn={isLoggedIn}
           publicStoreDomain={publicStoreDomain}
         />
-      )}
-      <main>{children}</main>
-      <Footer
-        footer={footer}
-        header={header}
-        publicStoreDomain={publicStoreDomain}
-      />
-    </Aside.Provider>
+      </Aside.Provider>
+    </QuickAddProvider>
   );
 }
 
-/**
- * @param {{cart: PageLayoutProps['cart']}}
- */
 function CartAside({cart}) {
   return (
-    <Aside type="cart" heading="MY CART">
+    <Aside type="cart" heading="My Bag">
       <CartMain cart={cart} layout="aside" />
+    </Aside>
+  );
+}
+
+function QuickAddAside() {
+  return (
+    <Aside type="options" heading="Choose Options">
+      <QuickAddPanel />
     </Aside>
   );
 }
@@ -137,16 +146,10 @@ function SearchAside() {
   );
 }
 
-/**
- * @param {{
- *   header: PageLayoutProps['header'];
- *   publicStoreDomain: PageLayoutProps['publicStoreDomain'];
- * }}
- */
 function MobileMenuAside({header, publicStoreDomain}) {
   return (
-    header.menu &&
-    header.shop.primaryDomain?.url && (
+    header?.menu &&
+    header?.shop?.primaryDomain?.url && (
       <Aside type="mobile" heading="MENU">
         <HeaderMenu
           menu={header.menu}
@@ -158,17 +161,3 @@ function MobileMenuAside({header, publicStoreDomain}) {
     )
   );
 }
-
-/**
- * @typedef {Object} PageLayoutProps
- * @property {Promise<CartApiQueryFragment|null>} cart
- * @property {Promise<FooterQuery|null>} footer
- * @property {HeaderQuery} header
- * @property {Promise<boolean>} isLoggedIn
- * @property {string} publicStoreDomain
- * @property {React.ReactNode} [children]
- */
-
-/** @typedef {import('storefrontapi.generated').CartApiQueryFragment} CartApiQueryFragment */
-/** @typedef {import('storefrontapi.generated').FooterQuery} FooterQuery */
-/** @typedef {import('storefrontapi.generated').HeaderQuery} HeaderQuery */
