@@ -381,7 +381,7 @@ export default function ProductDetail() {
                   ? 'Sold Out'
                   : adding
                   ? 'Adding…'
-                  : '🛒 Add to Bag'}
+                  : <><span>Add to Bag</span><i style={{fontStyle:'normal',display:'inline-block',transition:'transform .22s ease'}}>→</i></>}
               </button>
             )}
           </div>

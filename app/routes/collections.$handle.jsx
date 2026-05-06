@@ -176,7 +176,11 @@ function ProductCard({product}) {
             disabled={adding || !firstVariant?.availableForSale}
             type="button"
           >
-            {!firstVariant?.availableForSale ? 'Sold Out' : adding ? 'Adding…' : 'Add to Cart'}
+            {!firstVariant?.availableForSale
+              ? 'Sold Out'
+              : adding
+              ? 'Adding…'
+              : <><span>Add to Cart</span><i className="pc-atc-arrow" aria-hidden="true">→</i></>}
           </button>
         )}
       </div>

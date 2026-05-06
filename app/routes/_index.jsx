@@ -25,7 +25,7 @@ const HOME_QUERY = `#graphql
     }
     products(first: 8, sortKey: BEST_SELLING) {
       nodes {
-        id title handle
+        id title handle productType
         priceRange { minVariantPrice { amount currencyCode } }
         compareAtPriceRange { minVariantPrice { amount currencyCode } }
         featuredImage { url altText }
@@ -41,10 +41,18 @@ const HOME_QUERY = `#graphql
     }
     newProducts: products(first: 4, sortKey: CREATED_AT, reverse: true) {
       nodes {
-        id title handle
+        id title handle productType
         priceRange { minVariantPrice { amount currencyCode } }
+        compareAtPriceRange { minVariantPrice { amount currencyCode } }
         featuredImage { url altText }
         tags
+        variants(first: 3) {
+          nodes {
+            id title availableForSale
+            price { amount currencyCode }
+            compareAtPrice { amount currencyCode }
+          }
+        }
       }
     }
   }
@@ -80,11 +88,11 @@ export async function loader({context}) {
 // Categories are now fully driven by Shopify Storefront API (see HOME_QUERY +
 // curateCollections in the loader). No hardcoded category list remains.
 
-function getBadge(tags = []) {
-  if (tags.includes('bestseller')) return {label: 'BESTSELLER', type: 'hot'};
-  if (tags.includes('new'))        return {label: 'NEW', type: 'new'};
-  if (tags.includes('viral'))      return {label: 'VIRAL', type: 'viral'};
-  return {label: 'AYURVEDIC', type: 'new'};
+// Stable deterministic rating (4.4–5.0) derived from product id
+function stableRating(id = '') {
+  let h = 0;
+  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
+  return (4.4 + (h % 7) * 0.1).toFixed(1);
 }
 
 function MarqueeBar() {
@@ -116,56 +124,47 @@ function reviewCount(id = '') {
   return 280 + (h % 7800);
 }
 
-function pickStatusLabel(tags = []) {
-  const lower = tags.map((t) => t.toLowerCase());
-  if (lower.includes('viral'))     return {text: '#1 BESTSELLER',      tone: 'moss'};
-  if (lower.includes('bestseller'))return {text: 'CUSTOMER FAVOURITE', tone: 'moss'};
-  if (lower.includes('new'))       return {text: 'NEW LAUNCH',         tone: 'terracotta'};
-  return {text: 'AYURVEDIC PICK', tone: 'moss'};
-}
-
-// Circular stamp text per product — rotates so each card looks distinct
-// (Pilgrim hand-paints these into product photos; we layer them in CSS).
-const STAMP_VARIANTS = [
-  {top: 'CLINICALLY', mid: 'TESTED', bot: 'AYURVEDIC FORMULA'},
-  {top: '100%',       mid: 'NATURAL', bot: 'NO PARABENS'},
-  {top: 'AGE-OLD',    mid: 'RITUAL',  bot: '5000 YR HERITAGE'},
-  {top: 'FARM',       mid: 'TO BOTTLE', bot: 'PURE & TRACED'},
-];
-function pickStamp(id = '') {
-  let h = 0;
-  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
-  return STAMP_VARIANTS[h % STAMP_VARIANTS.length];
-}
 
 function TrendingCard({product}) {
   const {addToCart, addingVariants, cart, updateCartLine} = useCart();
   const {open} = useAside();
   const {setProduct: setQuickAddProduct} = useQuickAdd();
 
-  const status    = pickStatusLabel(product.tags);
   const isViral   = product.tags?.some((t) => /viral|bestseller/i.test(t));
-  const isNew     = product.tags?.some((t) => /new/i.test(t));
+  const isNew     = product.tags?.some((t) => /\bnew\b/i.test(t));
+  const rating    = stableRating(product.id);
   const reviews   = reviewCount(product.id);
-  const stamp     = pickStamp(product.id);
 
   const variants         = product.variants?.nodes || [];
   const firstVariant     = variants[0];
   const hasMultiVariants = variants.length > 1;
+
+  const price     = firstVariant?.price || product.priceRange?.minVariantPrice;
+  const compareAt = firstVariant?.compareAtPrice || product.compareAtPriceRange?.minVariantPrice;
+  const hasDiscount = compareAt?.amount && price?.amount && parseFloat(compareAt.amount) > parseFloat(price.amount);
+  const discount  = hasDiscount
+    ? Math.round(((parseFloat(compareAt.amount) - parseFloat(price.amount)) / parseFloat(compareAt.amount)) * 100)
+    : 0;
 
   const cartItem = cart?.items?.find((item) => item.id === firstVariant?.id);
   const cartQty  = cartItem?.quantity || 0;
   const lineId   = cartItem?.lineId;
   const adding   = addingVariants.has(firstVariant?.id);
 
-  // Single-variant: add → open cart drawer immediately (homepage UX)
+  // Category label — use productType if available, else derive from tags
+  const category = product.productType
+    || (product.tags?.some((t) => /face|facial|skin/i.test(t)) ? 'Face Care'
+      : product.tags?.some((t) => /hair/i.test(t)) ? 'Hair Care'
+      : product.tags?.some((t) => /body/i.test(t)) ? 'Body Care'
+      : product.tags?.some((t) => /wellness|herb/i.test(t)) ? 'Wellness'
+      : 'Ayurvedic Formula');
+
+  // Single-variant: add → open cart drawer immediately
   function handleDirectATC(e) {
     e.preventDefault();
     e.stopPropagation();
     if (!firstVariant?.id || adding) return;
-    addToCart(firstVariant.id, 1).then(() => {
-      open('cart');
-    });
+    addToCart(firstVariant.id, 1).then(() => open('cart'));
   }
 
   // Multi-variant: open Quick Add panel
@@ -178,36 +177,18 @@ function TrendingCard({product}) {
 
   return (
     <div className="tr-card">
+      {/* Badge ribbon — priority: discount > bestseller > new */}
+      {discount >= 5 ? (
+        <span className="tr-badge tr-badge-off">{discount}% OFF</span>
+      ) : isViral ? (
+        <span className="tr-badge tr-badge-hot">BESTSELLER</span>
+      ) : isNew ? (
+        <span className="tr-badge tr-badge-new">NEW LAUNCH</span>
+      ) : null}
+
       <Link to={`/products/${product.handle}`} className="tr-card-link" aria-label={product.title}>
+        {/* Image — 4:5 portrait */}
         <div className="tr-card-img">
-          {/* Top-left ribbon (B1G1FREE in Pilgrim) */}
-          <span className="tr-ribbon-l">B1G1FREE</span>
-
-          {/* Circular stamp top-right (CLINICALLY TESTED in Pilgrim) */}
-          <span className="tr-stamp">
-            <span className="tr-stamp-inner">
-              <span className="tr-stamp-top">{stamp.top}</span>
-              <span className="tr-stamp-mid">{stamp.mid}</span>
-              <span className="tr-stamp-bot">{stamp.bot}</span>
-            </span>
-          </span>
-
-          {/* Yellow "NEW & IMPROVED" diagonal callout */}
-          {isNew && (
-            <span className="tr-callout">
-              <span className="tr-callout-top">NEW</span>
-              <span className="tr-callout-bot">&amp; IMPROVED</span>
-            </span>
-          )}
-
-          {/* Vertical "VIRAL · BEST SELLER" red ribbon */}
-          {isViral && (
-            <span className="tr-ribbon-r">
-              <span className="tr-ribbon-r-top">VIRAL</span>
-              <span className="tr-ribbon-r-bot">BEST SELLER</span>
-            </span>
-          )}
-
           {product.featuredImage?.url ? (
             <img
               src={product.featuredImage.url}
@@ -219,17 +200,29 @@ function TrendingCard({product}) {
           )}
         </div>
 
+        {/* Body */}
         <div className="tr-card-body">
-          <p className={`tr-status tr-status-${status.tone}`}>{status.text}</p>
+          <p className="tr-category">{category}</p>
           <h3 className="tr-name">{product.title}</h3>
-          <p className="tr-desc">Time-tested Ayurvedic formula</p>
+          <p className="tr-desc">Pure Ayurvedic formula</p>
+
           <div className="tr-rating">
-            <span className="tr-stars" aria-label="5 out of 5 stars">★ ★ ★ ★ ★</span>
-            <span className="tr-reviews">{reviews.toLocaleString('en-IN')} reviews</span>
+            <span className="tr-stars" aria-label={`${rating} stars`}>★★★★★</span>
+            <span className="tr-rating-score">{rating}</span>
+            <span className="tr-reviews">({reviews.toLocaleString('en-IN')})</span>
           </div>
-          <div className="tr-meta">1 Size</div>
+
           <div className="tr-price">
-            From&nbsp;<Money data={product.priceRange.minVariantPrice} />
+            <span className="tr-price-current">
+              {hasMultiVariants && <span className="tr-price-from">From </span>}
+              <Money data={price} />
+            </span>
+            {hasDiscount && (
+              <>
+                <span className="tr-price-mrp"><Money data={compareAt} /></span>
+                {discount > 0 && <span className="tr-price-pct">{discount}% off</span>}
+              </>
+            )}
           </div>
         </div>
       </Link>
@@ -237,7 +230,7 @@ function TrendingCard({product}) {
       {/* Multi-variant → Choose Options */}
       {hasMultiVariants && (
         <button className="tr-cta tr-cta-options" onClick={handleChooseOptions} type="button">
-          Choose Options <span aria-hidden="true">→</span>
+          Choose Options <i className="tr-cta-arrow" aria-hidden="true">→</i>
         </button>
       )}
 
@@ -252,7 +245,7 @@ function TrendingCard({product}) {
         </div>
       )}
 
-      {/* Single-variant not in cart → ATC opens drawer */}
+      {/* Single-variant not in cart → ATC */}
       {!hasMultiVariants && cartQty === 0 && (
         <button
           className={`tr-cta ${adding ? 'tr-cta-loading' : ''}`}
@@ -264,7 +257,7 @@ function TrendingCard({product}) {
             ? 'Sold Out'
             : adding
             ? 'Adding…'
-            : <>Add to cart <span aria-hidden="true">→</span></>}
+            : <><span>Add to Cart</span><i className="tr-cta-arrow" aria-hidden="true">→</i></>}
         </button>
       )}
     </div>
@@ -280,30 +273,73 @@ function TrendingSection({products = []}) {
   return (
     <section className="tr-section">
       <div className="tr-container">
+
+        {/* ── Two-column editorial header ── */}
         <div className="tr-head">
-          <h2 className="tr-title">Trending Now</h2>
-          <p className="tr-subtitle">Curated just for you!</p>
-          <div className="tr-tabs" role="tablist">
-            {TRENDING_TABS.map((t) => (
-              <button
-                key={t.id}
-                role="tab"
-                aria-selected={t.id === activeTab}
-                className={`tr-tab${t.id === activeTab ? ' is-active' : ''}`}
-                onClick={() => setActiveTab(t.id)}
-                type="button"
-              >
-                {t.label}
-              </button>
-            ))}
+          <div className="tr-head-left">
+            <h2 className="tr-title">Trending Now</h2>
+            <p className="tr-subtitle">Our most loved Ayurvedic formulas this season</p>
           </div>
+          <Link to="/collections/all" className="tr-viewall">
+            View all <span aria-hidden="true">→</span>
+          </Link>
         </div>
 
+        {/* ── Filter tabs ── */}
+        <div className="tr-tabs" role="tablist">
+          {TRENDING_TABS.map((t) => (
+            <button
+              key={t.id}
+              role="tab"
+              aria-selected={t.id === activeTab}
+              className={`tr-tab${t.id === activeTab ? ' is-active' : ''}`}
+              onClick={() => setActiveTab(t.id)}
+              type="button"
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+
+        {/* ── Product grid ── */}
         <div className="tr-grid">
           {visible.map((p) => (
             <TrendingCard key={p.id} product={p} />
           ))}
         </div>
+
+      </div>
+    </section>
+  );
+}
+
+function NewArrivalsSection({products = []}) {
+  if (!products.length) return null;
+  return (
+    <section className="na-section">
+      <div className="tr-container">
+
+        {/* ── Two-column editorial header ── */}
+        <div className="tr-head">
+          <div className="tr-head-left">
+            <span className="na-eyebrow">Just landed</span>
+            <h2 className="tr-title">
+              New <em>arrivals</em>
+            </h2>
+            <p className="tr-subtitle">Freshly crafted Ayurvedic formulas, just in</p>
+          </div>
+          <Link to="/collections/new-in" className="tr-viewall">
+            See all new <span aria-hidden="true">→</span>
+          </Link>
+        </div>
+
+        {/* ── Same 4-column card grid as Trending Now ── */}
+        <div className="tr-grid">
+          {products.map((p) => (
+            <TrendingCard key={p.id} product={p} />
+          ))}
+        </div>
+
       </div>
     </section>
   );
@@ -426,7 +462,7 @@ export default function Homepage() {
 
             <div className="cat-foot">
               <Link to="/collections/all" className="cat-viewall-btn">
-                View all products →
+                View all products
               </Link>
             </div>
           </div>
@@ -435,36 +471,6 @@ export default function Homepage() {
 
       <TrendingSection products={allProducts} />
 
-      {/* ── Editorial Promo ── */}
-      <section className="editorial container">
-        <div className="editorial-grid">
-          <div className="editorial-text">
-            <span className="editorial-eyebrow"><span className="editorial-eyebrow-line"/>Ancient Formula · N° 01</span>
-            <h2 className="editorial-title">Saffron &amp;<br/><em>radiance.</em></h2>
-            <p className="editorial-lede">The legendary Kumkumadi tailam — 24 rare herbs in cold-pressed sesame oil, anchored by pure saffron. Clinically proven to reduce pigmentation by 43% in 28 days.</p>
-            <div className="editorial-features">
-              {['Pure saffron (kumkuma)','24 rare Ayurvedic herbs','-43% pigmentation in 28 days','Zero synthetic fragrance'].map(f=>(
-                <div key={f} className="editorial-feature"><span className="editorial-feature-dot"/>{f}</div>
-              ))}
-            </div>
-            <Link to="/collections/all" className="btn btn-paper">Shop now <span className="arrow">→</span></Link>
-          </div>
-          <div className="editorial-visual">
-            <svg viewBox="0 0 220 380" width="220" height="380" xmlns="http://www.w3.org/2000/svg" style={{filter:'drop-shadow(0 28px 48px rgba(26,40,16,0.35))'}}>
-              <defs><linearGradient id="kG" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#e8c891"/><stop offset="100%" stopColor="#8a6030"/></linearGradient></defs>
-              <path d="M40 80 Q40 60 110 60 Q180 60 180 80 L168 340 Q168 360 110 360 Q52 360 52 340 Z" fill="url(#kG)"/>
-              <rect x="62" y="36" width="96" height="36" rx="8" fill="#1e4010"/>
-              <rect x="78" y="20" width="64" height="22" rx="6" fill="#0e2008"/>
-              <rect x="50" y="118" width="120" height="168" rx="5" fill="#faf8f2" opacity="0.94"/>
-              <text x="110" y="154" textAnchor="middle" fontFamily="Fraunces,Georgia,serif" fontStyle="italic" fontSize="14" fill="#1a2810">Vaidhacharya</text>
-              <line x1="78" y1="166" x2="142" y2="166" stroke="#1a2810" strokeWidth="0.6"/>
-              <text x="110" y="218" textAnchor="middle" fontFamily="Fraunces,Georgia,serif" fontSize="13" fill="#3a6b1a">Brightening Face Oil</text>
-              <rect x="76" y="250" width="68" height="22" rx="11" fill="#1e4010"/>
-              <text x="110" y="265" textAnchor="middle" fontFamily="Inter,sans-serif" fontSize="9" fill="#e8dcc4" fontWeight="600" letterSpacing="1">PURE SAFFRON</text>
-            </svg>
-          </div>
-        </div>
-      </section>
 
       {/* ── Why Vaidhacharya ── */}
       <section className="why">
@@ -487,40 +493,7 @@ export default function Homepage() {
       </section>
 
       {/* ── New Arrivals ── */}
-      {newArrivals.length > 0 && (
-        <section className="summer" style={{background:'var(--paper-2)'}}>
-          <div className="container">
-            <div className="cat-head">
-              <div>
-                <span className="eyebrow">Just landed</span>
-                <h2 className="section-title" style={{marginTop:12}}>New <em>arrivals</em></h2>
-              </div>
-              <div className="cat-head-r">
-                <Link to="/collections/new-in" className="cat-head-link">See all new →</Link>
-              </div>
-            </div>
-            <div className="product-grid">
-              {newArrivals.map(p=>(
-                <Link key={p.id} to={`/products/${p.handle}`} className="product-card">
-                  <div className="product-img" style={{background:'linear-gradient(160deg,#d8e3c433,#d8e3c466)'}}>
-                    <span className="product-pill new">NEW</span>
-                    {p.featuredImage?.url
-                      ? <img src={p.featuredImage.url} alt={p.featuredImage.altText||p.title} style={{width:'100%',height:'100%',objectFit:'contain',padding:16}} loading="lazy"/>
-                      : <div style={{fontSize:40,display:'flex',alignItems:'center',justifyContent:'center',height:'100%',color:'var(--moss)',opacity:0.3}}>✦</div>
-                    }
-                  </div>
-                  <div className="product-info">
-                    <h3 className="product-name">{p.title}</h3>
-                    <div className="product-row">
-                      <span className="product-price"><Money data={p.priceRange.minVariantPrice}/></span>
-                    </div>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
+      <NewArrivalsSection products={newArrivals} />
     </>
   );
 }
