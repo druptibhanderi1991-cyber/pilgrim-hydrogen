@@ -1,4 +1,4 @@
-import {useState} from 'react';
+import {useState, useRef, useCallback} from 'react';
 import {useLoaderData, Link} from 'react-router';
 import {Money} from '@shopify/hydrogen';
 import CategoryCard from '~/components/CategoryCard';
@@ -177,14 +177,13 @@ function TrendingCard({product}) {
 
   return (
     <div className="tr-card">
-      {/* Badge ribbon — priority: discount > bestseller > new */}
-      {discount >= 5 ? (
-        <span className="tr-badge tr-badge-off">{discount}% OFF</span>
-      ) : isViral ? (
-        <span className="tr-badge tr-badge-hot">BESTSELLER</span>
-      ) : isNew ? (
-        <span className="tr-badge tr-badge-new">NEW LAUNCH</span>
-      ) : null}
+      {/* Circular discount badge on image — Pilgrim pattern */}
+      {discount >= 5 && (
+        <span className="tr-discount-circle">
+          <strong>{discount}%</strong>
+          <span>OFF</span>
+        </span>
+      )}
 
       <Link to={`/products/${product.handle}`} className="tr-card-link" aria-label={product.title}>
         {/* Image — 4:5 portrait */}
@@ -200,18 +199,35 @@ function TrendingCard({product}) {
           )}
         </div>
 
-        {/* Body */}
+        {/* Body — LEFT-ALIGNED, Pilgrim structure */}
         <div className="tr-card-body">
-          <p className="tr-category">{category}</p>
-          <h3 className="tr-name">{product.title}</h3>
-          <p className="tr-desc">Pure Ayurvedic formula</p>
 
+          {/* ① Rating row — FIRST (Pilgrim pattern) */}
           <div className="tr-rating">
             <span className="tr-stars" aria-label={`${rating} stars`}>★★★★★</span>
             <span className="tr-rating-score">{rating}</span>
             <span className="tr-reviews">({reviews.toLocaleString('en-IN')})</span>
           </div>
 
+          {/* ② Inline badge for bestseller / new — inside body, not image overlay */}
+          {isViral && <span className="tr-inline-badge tr-inline-badge-hot">BESTSELLER</span>}
+          {!isViral && isNew && <span className="tr-inline-badge tr-inline-badge-new">NEW LAUNCH</span>}
+
+          {/* ③ Category label */}
+          <p className="tr-category">{category}</p>
+
+          {/* ④ Product title */}
+          <h3 className="tr-name">{product.title}</h3>
+
+          {/* ⑤ Benefit tagline */}
+          <p className="tr-desc">Pure Ayurvedic formula</p>
+
+          {/* ⑥ Variant hint */}
+          {hasMultiVariants && (
+            <p className="tr-variant-hint">{variants.length} sizes available</p>
+          )}
+
+          {/* ⑦ Price */}
           <div className="tr-price">
             <span className="tr-price-current">
               {hasMultiVariants && <span className="tr-price-from">From </span>}
@@ -266,22 +282,30 @@ function TrendingCard({product}) {
 
 function TrendingSection({products = []}) {
   const [activeTab, setActiveTab] = useState('bestsellers');
+  const scrollRef = useRef(null);
+
   const tab = TRENDING_TABS.find((t) => t.id === activeTab) || TRENDING_TABS[0];
   const filtered = products.filter(tab.match);
-  const visible = (filtered.length > 0 ? filtered : products).slice(0, 4);
+  const visible = filtered.length > 0 ? filtered : products;
+
+  const scroll = useCallback((dir) => {
+    if (!scrollRef.current) return;
+    const cardW = scrollRef.current.querySelector('.tr-card')?.offsetWidth || 280;
+    scrollRef.current.scrollBy({left: dir * (cardW + 20), behavior: 'smooth'});
+  }, []);
 
   return (
     <section className="tr-section">
       <div className="tr-container">
 
-        {/* ── Two-column editorial header ── */}
+        {/* ── Header row — eyebrow + title + view all ── */}
         <div className="tr-head">
           <div className="tr-head-left">
+            <p className="tr-eyebrow">Curated just for you!</p>
             <h2 className="tr-title">Trending Now</h2>
-            <p className="tr-subtitle">Our most loved Ayurvedic formulas this season</p>
           </div>
           <Link to="/collections/all" className="tr-viewall">
-            View all <span aria-hidden="true">→</span>
+            View all products <span aria-hidden="true">→</span>
           </Link>
         </div>
 
@@ -301,11 +325,27 @@ function TrendingSection({products = []}) {
           ))}
         </div>
 
-        {/* ── Product grid ── */}
-        <div className="tr-grid">
-          {visible.map((p) => (
-            <TrendingCard key={p.id} product={p} />
-          ))}
+        {/* ── Carousel ── */}
+        <div className="tr-carousel-wrap">
+          <button
+            className="tr-carousel-btn tr-carousel-prev"
+            onClick={() => scroll(-1)}
+            aria-label="Previous products"
+            type="button"
+          >‹</button>
+
+          <div className="tr-carousel" ref={scrollRef}>
+            {visible.map((p) => (
+              <TrendingCard key={p.id} product={p} />
+            ))}
+          </div>
+
+          <button
+            className="tr-carousel-btn tr-carousel-next"
+            onClick={() => scroll(1)}
+            aria-label="Next products"
+            type="button"
+          >›</button>
         </div>
 
       </div>
@@ -315,29 +355,50 @@ function TrendingSection({products = []}) {
 
 function NewArrivalsSection({products = []}) {
   if (!products.length) return null;
+  const scrollRef = useRef(null);
+
+  const scroll = useCallback((dir) => {
+    if (!scrollRef.current) return;
+    const cardW = scrollRef.current.querySelector('.tr-card')?.offsetWidth || 280;
+    scrollRef.current.scrollBy({left: dir * (cardW + 20), behavior: 'smooth'});
+  }, []);
+
   return (
     <section className="na-section">
       <div className="tr-container">
 
-        {/* ── Two-column editorial header ── */}
+        {/* ── Header row ── */}
         <div className="tr-head">
           <div className="tr-head-left">
-            <span className="na-eyebrow">Just landed</span>
-            <h2 className="tr-title">
-              New <em>arrivals</em>
-            </h2>
-            <p className="tr-subtitle">Freshly crafted Ayurvedic formulas, just in</p>
+            <p className="tr-eyebrow">Just landed</p>
+            <h2 className="tr-title">New Launches</h2>
           </div>
           <Link to="/collections/new-in" className="tr-viewall">
-            See all new <span aria-hidden="true">→</span>
+            View all <span aria-hidden="true">→</span>
           </Link>
         </div>
 
-        {/* ── Same 4-column card grid as Trending Now ── */}
-        <div className="tr-grid">
-          {products.map((p) => (
-            <TrendingCard key={p.id} product={p} />
-          ))}
+        {/* ── Carousel ── */}
+        <div className="tr-carousel-wrap">
+          <button
+            className="tr-carousel-btn tr-carousel-prev"
+            onClick={() => scroll(-1)}
+            aria-label="Previous products"
+            type="button"
+          >‹</button>
+
+          <div className="tr-carousel" ref={scrollRef}>
+            {products.map((p) => (
+              <TrendingCard key={p.id} product={p} />
+            ))}
+          </div>
+
+          <button
+            className="tr-carousel-btn tr-carousel-next"
+            onClick={() => scroll(1)}
+            aria-label="Next products"
+            type="button"
+          >›</button>
         </div>
 
       </div>
@@ -346,10 +407,38 @@ function NewArrivalsSection({products = []}) {
 }
 
 const WHY_CARDS = [
-  {icon: '✦', title: 'Clinically Proven',       text: 'Every formula tested in NABL-certified labs. We share the data — no empty claims.'},
-  {icon: '❀', title: '5000 Years of Heritage',   text: 'Rooted in the Charaka Samhita and Ashtanga Hridayam. Tradition backed by science.'},
-  {icon: '◯', title: '100% Natural & Vegan',     text: 'PETA-certified. No animal ingredients, parabens, sulphates or synthetic fragrance. Ever.'},
-  {icon: '✧', title: 'Farm-to-Bottle',           text: 'Direct sourcing from 34 certified organic farms across India, Nepal and Sri Lanka.'},
+  {
+    symbol: '⬡',
+    botanical: 'lab',
+    accent: '#3a6b1a',
+    title: 'Clinically Proven',
+    tag: 'NABL Certified',
+    text: 'Every formula tested in NABL-certified labs. We share the data — no empty claims, no greenwashing.',
+  },
+  {
+    symbol: '❧',
+    botanical: 'scroll',
+    accent: '#7a4f1a',
+    title: '5000 Years of Heritage',
+    tag: 'Ancient Wisdom',
+    text: 'Rooted in the Charaka Samhita and Ashtanga Hridayam. Tradition perfected over millennia, backed by science.',
+  },
+  {
+    symbol: '✿',
+    botanical: 'leaf',
+    accent: '#2a5c10',
+    title: '100% Natural & Vegan',
+    tag: 'PETA Certified',
+    text: 'PETA-certified. No animal ingredients, parabens, sulphates or synthetic fragrance — ever. Pure as nature intended.',
+  },
+  {
+    symbol: '◈',
+    botanical: 'farm',
+    accent: '#5a3e10',
+    title: 'Farm-to-Bottle',
+    tag: 'Direct Sourcing',
+    text: 'Sourced directly from 34 certified organic farms across India, Nepal and Sri Lanka. Traceable to the root.',
+  },
 ];
 
 export default function Homepage() {
@@ -474,18 +563,52 @@ export default function Homepage() {
 
       {/* ── Why Vaidhacharya ── */}
       <section className="why">
+        {/* Floating botanical background glyphs */}
+        <span className="why-bg-leaf why-bg-leaf--1" aria-hidden="true">❧</span>
+        <span className="why-bg-leaf why-bg-leaf--2" aria-hidden="true">✿</span>
+        <span className="why-bg-leaf why-bg-leaf--3" aria-hidden="true">❧</span>
+
         <div className="container">
+          {/* ── Header ── */}
           <div className="why-head">
-            <span className="eyebrow">The Vaidhacharya promise</span>
-            <h2 className="section-title" style={{marginTop:14}}>Ayurveda without <em>compromise.</em></h2>
-            <p className="section-sub" style={{margin:'14px auto 0'}}>Four principles behind every formula we create.</p>
+            <div className="why-head-ornament" aria-hidden="true">
+              <span className="why-ornament-line"/>
+              <span className="why-ornament-glyph">✦</span>
+              <span className="why-ornament-line"/>
+            </div>
+            <span className="why-eyebrow">The Vaidhacharya Promise</span>
+            <h2 className="why-title">
+              Ayurveda without <em>compromise.</em>
+            </h2>
+            <p className="why-sub">
+              Four principles behind every formula we create —<br/>
+              ancient wisdom, modern rigour, zero shortcuts.
+            </p>
           </div>
+
+          {/* ── Cards ── */}
           <div className="why-row">
-            {WHY_CARDS.map(c=>(
+            {WHY_CARDS.map((c) => (
               <div key={c.title} className="why-card">
-                <div className="why-icon">{c.icon}</div>
+                {/* Botanical corner accent */}
+                <span className="why-card-corner" aria-hidden="true">❧</span>
+
+                {/* Icon medallion */}
+                <div className="why-icon" style={{'--accent': c.accent}}>
+                  <span className="why-icon-glyph">{c.symbol}</span>
+                  <span className="why-icon-ring" aria-hidden="true"/>
+                </div>
+
+                {/* Tag pill */}
+                <span className="why-tag" style={{color: c.accent, borderColor: c.accent + '44'}}>
+                  {c.tag}
+                </span>
+
                 <h3 className="why-card-title">{c.title}</h3>
                 <p className="why-card-text">{c.text}</p>
+
+                {/* Decorative bottom leaf */}
+                <span className="why-card-foot" aria-hidden="true">— ✦ —</span>
               </div>
             ))}
           </div>
